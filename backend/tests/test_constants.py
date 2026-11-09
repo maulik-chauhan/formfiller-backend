@@ -18,11 +18,11 @@ def test_metadata_matches_canonical_inventory() -> None:
 
 def test_credit_bucket_values() -> None:
     assert set(c.CreditBucket) == {
-        c.CreditBucket.FREE_QUOTA,
-        c.CreditBucket.STANDARD_BASE,
-        c.CreditBucket.SIGNATURE_BUNDLE,
-        c.CreditBucket.SIGNATURE_UPGRADE,
-        c.CreditBucket.ESIGN_ADDON,
+        c.CreditBucket.FREE_LIFETIME,
+        c.CreditBucket.STANDARD_20,
+        c.CreditBucket.SIGNATURE_50,
+        c.CreditBucket.SIGNATURE_UPGRADE_30,
+        c.CreditBucket.ESIGN,
     }
 
 

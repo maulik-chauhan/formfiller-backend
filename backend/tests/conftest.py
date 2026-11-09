@@ -31,6 +31,7 @@ _SYNC_URL = _ASYNC_URL.replace("+asyncpg", "")
 
 _TEST_SEED_B64 = base64.b64encode(bytes(range(32))).decode()
 _TEST_TEMPLATE_SEED_B64 = base64.b64encode(bytes(range(32, 64))).decode()
+_TEST_ELT_SEED_B64 = base64.b64encode(bytes(range(64, 96))).decode()
 
 os.environ.update(
     {
@@ -42,18 +43,13 @@ os.environ.update(
         "ACCESS_JWT_ED25519_SEED_B64": _TEST_SEED_B64,
         "TEMPLATE_SIGNING_ED25519_SEED_B64": _TEST_TEMPLATE_SEED_B64,
         "TEMPLATE_STORAGE_DIR": "/tmp/govforms_templates_test",
+        "LEASE_SIGNING_SEED_B64": _TEST_ELT_SEED_B64,
+        "LEASE_SIGNING_KEY_ID": "ed25519-elt-2026-v1",
         # COM-01 is provisional; tests explicitly configure the quota so the
         # quota/restoration logic can be exercised. Production leaves it unset.
         "DEFAULT_FREE_QUOTA_TOTAL": "2",
         "OTP_DELIVERY_PROVIDER": "mock",
     }
-)
-
-_SCHEMA_SQL = (
-    pathlib.Path(__file__).resolve().parent.parent
-    / "alembic"
-    / "versions"
-    / "0001_initial_schema.sql"
 )
 
 _ALL_TABLES = (
@@ -81,16 +77,19 @@ _ALL_TABLES = (
 
 @pytest.fixture(scope="session", autouse=True)
 def _pg_schema() -> Iterator[None]:
-    """Create the full schema once per test session via sync psycopg2."""
+    """Apply the full Alembic migration chain (0001 + 0002…) once per session."""
+    import subprocess
+
     conn = psycopg2.connect(_SYNC_URL)
     conn.autocommit = True
     try:
         with conn.cursor() as cur:
             cur.execute("DROP SCHEMA public CASCADE; CREATE SCHEMA public;")
-            cur.execute(_SCHEMA_SQL.read_text(encoding="utf-8"))
-        yield
     finally:
         conn.close()
+    backend_root = pathlib.Path(__file__).resolve().parent.parent
+    subprocess.run(["alembic", "upgrade", "head"], cwd=backend_root, check=True, env={**os.environ})
+    yield
 
 
 @pytest.fixture(autouse=True)
@@ -144,9 +143,11 @@ async def make_principal(db_session):  # type: ignore[no-untyped-def]
     import datetime as dt
     import uuid
 
+    from app.config import get_settings
     from app.core.constants import ClientPlatform, UserRole
     from app.core.security import create_access_token
     from app.modules.auth.models import AuthSession, User
+    from app.modules.entitlements.models import EntitlementWallet
 
     counter = {"n": 0}
 
@@ -170,6 +171,14 @@ async def make_principal(db_session):  # type: ignore[no-untyped-def]
         )
         await db_session.flush()  # ensure the user row exists before its session
         db_session.add(
+            EntitlementWallet(
+                user_id=uid,
+                free_quota_total=get_settings().resolved_free_quota_total,
+                free_quota_used=0,
+                free_quota_reserved=0,
+            )
+        )
+        db_session.add(
             AuthSession(
                 id=sid,
                 user_id=uid,
@@ -186,6 +195,93 @@ async def make_principal(db_session):  # type: ignore[no-untyped-def]
         return uid, token
 
     return _make
+
+
+@pytest_asyncio.fixture
+async def published_template_version(db_session):  # type: ignore[no-untyped-def]
+    """Insert a PUBLISHED template version directly and return its UUID."""
+    import datetime as dt
+    import uuid
+
+    from app.modules.auth.models import User
+    from app.modules.templates.models import (
+        ApprovedSourceDomain,
+        FormTemplate,
+        GovernmentSource,
+        TemplateVersion,
+    )
+
+    now = dt.datetime.now(tz=dt.UTC)
+    admins = [uuid.uuid4() for _ in range(3)]
+    for i, aid in enumerate(admins):
+        db_session.add(
+            User(
+                id=aid,
+                mobile_blind_index=f"{(5_000_000 + i):064x}",
+                role="SUPER_ADMIN",
+                account_status="ACTIVE",
+                is_mobile_verified=True,
+                mobile_verified_at=now,
+            )
+        )
+    db_session.add(
+        ApprovedSourceDomain(domain_pattern="gov.in", domain_type="GOV_TLD_SUFFIX", rationale="c")
+    )
+    await db_session.flush()
+    source_id = uuid.uuid4()
+    db_session.add(
+        GovernmentSource(
+            id=source_id,
+            source_code="MORD",
+            jurisdiction="CENTRAL_INDIA",
+            ministry_or_department="MoRD",
+            official_portal_url="https://rural.gov.in",
+            matched_domain_pattern="gov.in",
+            source_type="OFFICIAL_GOV_PORTAL",
+        )
+    )
+    await db_session.flush()
+    template_id = uuid.uuid4()
+    db_session.add(
+        FormTemplate(
+            id=template_id,
+            government_source_id=source_id,
+            slug="ror-7-12",
+            jurisdiction="CENTRAL_INDIA",
+            official_form_code="RTC-7/12",
+            category="REVENUE",
+            localized_titles={"en": "RoR"},
+            localized_descriptions={"en": "RoR"},
+        )
+    )
+    await db_session.flush()
+    version_id = uuid.uuid4()
+    db_session.add(
+        TemplateVersion(
+            id=version_id,
+            template_id=template_id,
+            semver="1.0.0",
+            status="PUBLISHED",
+            source_pdf_download_url="https://rural.gov.in/forms/ror.pdf",
+            source_url_matched_domain="gov.in",
+            source_downloaded_at=now,
+            blank_pdf_object_key="blank_pdfs/x.pdf",
+            blank_pdf_sha256="d" * 64,
+            blank_pdf_size_bytes=100,
+            page_count=1,
+            field_mapping_manifest={},
+            manifest_sha256="e" * 64,
+            bundle_sha256="f" * 64,
+            publisher_ed25519_sig="sig",
+            signing_key_id="kid",
+            created_by_admin_id=admins[0],
+            verified_by_admin_id=admins[1],
+            approved_by_admin_id=admins[2],
+            published_at=now,
+        )
+    )
+    await db_session.commit()
+    return version_id
 
 
 @pytest_asyncio.fixture

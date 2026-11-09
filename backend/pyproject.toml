@@ -47,6 +47,10 @@ select = ["E", "F", "I", "N", "UP", "B", "C4", "SIM", "RUF"]
 # B008: Depends(...) in defaults is the canonical FastAPI dependency idiom.
 ignore = ["N818", "B008"]
 
+[tool.ruff.lint.per-file-ignores]
+# Migrations embed canonical DDL/SQL strings that legitimately exceed the width.
+"alembic/versions/*" = ["E501"]
+
 [tool.ruff.lint.isort]
 known-first-party = ["app"]
 

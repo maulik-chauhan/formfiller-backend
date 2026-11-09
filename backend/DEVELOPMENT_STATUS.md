@@ -8,7 +8,7 @@ Living milestone tracker. Spec baseline: **v2.1.0**.
 | M2 | Database Models & Migrations | ✅ Complete |
 | **M3** | **Authentication & Session Security** | ✅ **Complete** |
 | **M4** | **Template Management & Maker-Checker** | ✅ **Complete** |
-| M5 | Entitlements, Leases & Offline Lifecycle | ⬜ Not started |
+| **M5** | **Entitlements, Leases & Offline Lifecycle** | ✅ **Complete** |
 | M6 | Payments, Webhooks & Refund Lifecycle | ⬜ Not started |
 | M7 | eSign Gateway (Gated) | 🔒 Disabled until compliance sign-off |
 
@@ -137,5 +137,65 @@ PostgreSQL integration + security). Published-immutability trigger verified live
 - Automated source-checksum polling (`SCHEDULED_STATIC_PDF_CHECK`) is modelled
   but not scheduled; checks are admin-recorded for now.
 
-## Milestones 5–7 — Not started
+## Milestone 5 — Entitlements, Leases & Offline Lifecycle ✅
+
+**Schema reconciliation (migration `0002`):** the M2 `0001` migration used
+provisional entitlement enum literals (`FREE_UPGRADED_SIGNATURE`, `STANDARD_BASE`,
+…) and the column `is_upgraded_with_sig`, which the authoritative v2.1.0 spec
+supersedes with `FREE_UPGRADED_SIG_50` / `PAID_UPGRADED_SIG_50`, the
+`FREE_LIFETIME` / `STANDARD_20` / `SIGNATURE_50` / `SIGNATURE_UPGRADE_30` / `ESIGN`
+buckets, and `is_upgraded_with_sig_30`. The old CHECK constraints would reject the
+required values, so M5 added the **smallest** additive migration: rename one column
+and rewrite five CHECK constraints. The 19-table inventory is unchanged; `upgrade`
+/`downgrade`/`upgrade` verified clean on PostgreSQL 16.
+
+**Endpoints (`/api/v1/entitlements`)**
+`GET /public-keys` (public), `GET /wallet` (Bearer), `POST /leases`,
+`POST /leases/{id}/upgrade`, `POST /leases/{id}/commit`, `POST /leases/{id}/release`
+(all Bearer + `Idempotency-Key: <UUIDv4>`).
+
+**Entitlement Lease Token (ELT)** — EdDSA/Ed25519 compact JWS, spec §8.2 claims
+(`iss`, `sub`, `jti`=lease id, `tid`, `tier`, `st`, `dfd`, `did`, `cap`, `cwe_hours`,
+`iat`, `exp`), header `typ=ELT+jwt`. Verifiable fully offline via `/public-keys`;
+active + previous keys support rotation without invalidating in-flight tokens.
+`exp` = reservation expiry (ISSUED) or correction-window expiry (COMMITTED).
+
+**Lifecycle & locking** — every wallet+lease operation locks
+`entitlement_wallets` `FOR UPDATE` then `entitlement_leases` `FOR UPDATE`, mutates
+balances, appends a hash-chained ledger entry, writes an allowlisted audit event,
+and commits atomically. Implements ISSUED→COMMITTED/RELEASED/EXPIRED_RELEASED,
+EXPIRED_RELEASED→COMMITTED (delayed recovery), and COMMITTED→COMMITTED
+(same-draft re-commit, 24h window, `410` when expired). 48h reservation / 24h
+correction windows are configurable.
+
+**Delayed recovery (§3.3)** — `completed_at_client_iso` is untrusted diagnostic
+metadata only: credit is granted strictly against the authoritative wallet
+balance (`409 LEASE_EXPIRED_CREDIT_CONSUMED` if spent, never negative), and the
+client timestamp is capped at the server reservation window before adding 24h, so
+a tampered clock cannot extend a window.
+
+**Reaper** — `app/workers/reaper.py`: idempotent, multi-instance-safe
+(`FOR UPDATE SKIP LOCKED`, wallet→lease lock order, deterministic
+`reaper:<lease_id>` ledger key). See README for run instructions.
+
+**Commercial safeguards** — free quota from `DEFAULT_FREE_QUOTA_TOTAL` (unset ⇒ 0);
+no price hardcoded (upgrade consumes a `SIGNATURE_UPGRADE_30` wallet credit; rupee
+values stay in `pricing_catalog`, pending product-owner approval). eSign tier
+rejected (M7-gated).
+
+**New environment variables:** `LEASE_SIGNING_SEED_B64`, `LEASE_SIGNING_KEY_ID`,
+`LEASE_SIGNING_PREV_SEED_B64`, `LEASE_SIGNING_PREV_KEY_ID`.
+
+**Quality gates (executed):** `ruff check .` ✅ · `ruff format --check .` ✅ ·
+`mypy --strict app` ✅ (51 files) · `pytest` ✅ **128 passed** (M1–M5, incl.
+PostgreSQL concurrency with separate sessions, reaper, and ledger-chain
+verification). Acceptance A–G all covered.
+
+**Known limitations / M6 prep**
+- `REVOKED_REFUND` lease state and the refund ledger entry types exist and are
+  reachable, but Razorpay refund processing is intentionally deferred to M6.
+- Rupee pricing rows are not seeded (payment is M6); upgrade reads the wallet
+  bucket, not a price.
+
+## Milestones 6–7 — Not started
 Out of scope for this pass. eSign remains disabled (`503`) until M7 sign-off.

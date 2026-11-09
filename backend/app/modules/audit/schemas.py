@@ -39,6 +39,15 @@ ALLOWED_AUDIT_METADATA_KEYS: frozenset[str] = frozenset(
         "to_status",
         "target_status",
         "check_result",
+        # Entitlements (M5) — identifiers, buckets and tiers only (no PII).
+        "template_version_id",
+        "credit_bucket",
+        "granted_tier",
+        "requested_tier",
+        "upgrade_sku",
+        "lease_status",
+        "commit_count",
+        "entry_type",
     }
 )
 

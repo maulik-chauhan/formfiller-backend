@@ -41,10 +41,18 @@ cp .env.example .env            # then edit secrets
 # Create schema
 alembic upgrade head
 
-# Run
+# Run the API
 uvicorn app.main:app --reload
 # → http://localhost:8000/docs   ·   GET /health
+
+# Run the expired-lease reaper (Milestone 5)
+python -m app.workers.reaper --once          # single sweep (use from cron / CronJob)
+python -m app.workers.reaper --interval 300  # loop every 5 min (dev convenience)
 ```
+
+The reaper is idempotent and safe to run as several concurrent replicas; in
+production run it as a dedicated worker or a scheduled `--once` job rather than an
+in-process timer.
 
 ## Quality gates
 

@@ -19,33 +19,42 @@ from enum import StrEnum
 # ---------------------------------------------------------------------------
 
 
-class CreditBucket(StrEnum):
-    """Logical wallet balance bucket (no rupee prices embedded)."""
+class SkuCode(StrEnum):
+    """Pricing SKU codes (``pricing_catalog.sku_code``, upgrade ``upgrade_sku``)."""
 
-    FREE_QUOTA = "FREE_QUOTA"
-    STANDARD_BASE = "STANDARD_BASE"
-    SIGNATURE_BUNDLE = "SIGNATURE_BUNDLE"
-    SIGNATURE_UPGRADE = "SIGNATURE_UPGRADE"
-    ESIGN_ADDON = "ESIGN_ADDON"
+    STD_FORM_20 = "STD_FORM_20"
+    SIG_IMAGE_50 = "SIG_IMAGE_50"
+    SIG_UPGRADE_30 = "SIG_UPGRADE_30"
+    ESIGN_OTP_CDAC = "ESIGN_OTP_CDAC"  # disabled until M7
+
+
+class CreditBucket(StrEnum):
+    """Logical wallet balance bucket (no rupee prices embedded in the names)."""
+
+    FREE_LIFETIME = "FREE_LIFETIME"
+    STANDARD_20 = "STANDARD_20"
+    SIGNATURE_50 = "SIGNATURE_50"
+    SIGNATURE_UPGRADE_30 = "SIGNATURE_UPGRADE_30"
+    ESIGN = "ESIGN"
 
 
 class RequestedLeaseTier(StrEnum):
     """Accepted values in ``CreateLeasePayload.requested_tier``."""
 
     FREE_STANDARD = "FREE_STANDARD"
-    PAID_STANDARD = "PAID_STANDARD"
-    PAID_SIGNATURE = "PAID_SIGNATURE"
+    PAID_STANDARD_20 = "PAID_STANDARD_20"
+    PAID_SIGNATURE_50 = "PAID_SIGNATURE_50"
     PAID_ESIGN = "PAID_ESIGN"  # disabled until M7
 
 
 class GrantedEntitlementTier(StrEnum):
-    """Stored in ``entitlement_leases.granted_tier`` and the lease JWT ``tier``."""
+    """Stored in ``entitlement_leases.granted_tier`` and the ELT ``tier`` claim."""
 
     FREE_STANDARD = "FREE_STANDARD"
-    PAID_STANDARD = "PAID_STANDARD"
-    PAID_SIGNATURE = "PAID_SIGNATURE"
-    FREE_UPGRADED_SIGNATURE = "FREE_UPGRADED_SIGNATURE"
-    PAID_UPGRADED_SIGNATURE = "PAID_UPGRADED_SIGNATURE"
+    PAID_STANDARD_20 = "PAID_STANDARD_20"
+    PAID_SIGNATURE_50 = "PAID_SIGNATURE_50"
+    FREE_UPGRADED_SIG_50 = "FREE_UPGRADED_SIG_50"
+    PAID_UPGRADED_SIG_50 = "PAID_UPGRADED_SIG_50"
     PAID_ESIGN = "PAID_ESIGN"  # disabled until M7
 
 

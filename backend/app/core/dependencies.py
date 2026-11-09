@@ -18,7 +18,7 @@ from fastapi import Depends, Request
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import AccountStatus, UserRole
-from app.core.errors import ForbiddenError, UnauthorizedError
+from app.core.errors import ForbiddenError, UnauthorizedError, ValidationFailedError
 from app.core.hashing import ip_subnet_hash
 from app.core.security import decode_access_token, extract_bearer
 from app.db.session import get_session
@@ -38,6 +38,20 @@ def get_request_context(request: Request) -> RequestContext:
     client_ip = request.client.host if request.client else "0.0.0.0"
     request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
     return RequestContext(ip_subnet_hash=ip_subnet_hash(client_ip), request_id=request_id[:64])
+
+
+def require_idempotency_key(request: Request) -> str:
+    """Require a valid ``Idempotency-Key: <UUIDv4>`` header on mutating routes."""
+    raw = request.headers.get("idempotency-key")
+    if not raw:
+        raise ValidationFailedError("Idempotency-Key header is required")
+    try:
+        parsed = uuid.UUID(raw)
+    except ValueError as exc:
+        raise ValidationFailedError("Idempotency-Key must be a UUID") from exc
+    if parsed.version != 4:
+        raise ValidationFailedError("Idempotency-Key must be a UUIDv4")
+    return str(parsed)
 
 
 @dataclass(frozen=True)

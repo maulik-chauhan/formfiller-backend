@@ -55,9 +55,13 @@ class Settings(BaseSettings):
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 30
 
-    # Ed25519 lease-signing key (base64, 32-byte seed) — Milestone 5, unused here.
+    # Ed25519 Entitlement-Lease-Token (ELT) signing key (base64, 32-byte seed).
+    # Empty => ephemeral dev key per process. The previous key (optional) keeps
+    # already-issued ELTs verifiable across a key rotation.
     lease_signing_seed_b64: str = Field(default="")
-    lease_signing_key_id: str = "dev-lease-key-1"
+    lease_signing_key_id: str = Field(default="ed25519-elt-2026-v1")
+    lease_signing_prev_seed_b64: str = Field(default="")
+    lease_signing_prev_key_id: str = Field(default="")
 
     # ----- Template publisher signing (EdDSA / Ed25519) -------------------
     # Signs published template bundles. Base64 32-byte seed; empty => ephemeral

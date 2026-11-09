@@ -94,6 +94,37 @@ class ValidationFailedError(AppError):
     title = "Invalid request"
 
 
+class GoneError(AppError):
+    status_code = status.HTTP_410_GONE
+    code = "GONE"
+    title = "Resource no longer available"
+
+
+class PaymentRequiredError(AppError):
+    status_code = status.HTTP_402_PAYMENT_REQUIRED
+    code = "PAYMENT_REQUIRED"
+    title = "Payment required for this entitlement"
+
+    def __init__(
+        self,
+        detail: str | None = None,
+        *,
+        code: str | None = None,
+        eligible_skus: list[str] | None = None,
+    ) -> None:
+        super().__init__(detail, code=code)
+        self.eligible_skus = eligible_skus or []
+
+    def to_problem(self, instance: str | None = None) -> ProblemDetail:
+        problem = super().to_problem(instance)
+        # Surface eligible SKUs in the detail so the client can route to payment.
+        if self.eligible_skus:
+            problem.detail = (problem.detail or self.title) + (
+                f" (eligible_skus: {', '.join(self.eligible_skus)})"
+            )
+        return problem
+
+
 def _json(problem: ProblemDetail) -> JSONResponse:
     return JSONResponse(
         status_code=problem.status,

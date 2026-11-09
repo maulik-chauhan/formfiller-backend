@@ -87,7 +87,7 @@ class EntitlementLease(Base):
     )
     granted_tier: Mapped[str] = mapped_column(String(32), nullable=False)
     base_credit_bucket: Mapped[str] = mapped_column(String(32), nullable=False)
-    is_upgraded_with_sig: Mapped[bool] = mapped_column(
+    is_upgraded_with_sig_30: Mapped[bool] = mapped_column(
         Boolean, nullable=False, server_default=text("FALSE")
     )
     lease_status: Mapped[str] = mapped_column(

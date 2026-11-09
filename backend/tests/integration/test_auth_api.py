@@ -415,7 +415,7 @@ async def test_financial_ledger_preserved_on_deletion(
             user_id=user_id,
             sequence_no=1,
             entry_type="FREE_GRANT",
-            credit_bucket="FREE_QUOTA",
+            credit_bucket="FREE_LIFETIME",
             delta_available=2,
             delta_reserved=0,
             available_balance_after=2,
