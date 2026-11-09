@@ -9,8 +9,13 @@ from __future__ import annotations
 import hashlib
 import hmac
 import ipaddress
+import re
+import secrets
 
 from app.config import get_settings
+
+#: Indian mobile in E.164: +91 followed by a 6-9 leading digit and 9 digits.
+INDIAN_MOBILE_E164 = re.compile(r"^\+91[6-9]\d{9}$")
 
 
 def _hmac_hex(key: str, message: str) -> str:
@@ -33,6 +38,36 @@ def otp_code_hmac(challenge_id: str, code: str) -> str:
     """HMAC of the OTP code bound to its challenge id (defeats rainbow tables)."""
     settings = get_settings()
     return _hmac_hex(settings.otp_hmac_key, f"{challenge_id}:{code}")
+
+
+def verify_otp_hmac(challenge_id: str, code: str, stored_hmac: str) -> bool:
+    """Constant-time comparison of a submitted OTP against the stored HMAC."""
+    return hmac.compare_digest(otp_code_hmac(challenge_id, code), stored_hmac)
+
+
+def generate_otp_code() -> str:
+    """Return a cryptographically secure 6-digit OTP (``secrets``), zero-padded."""
+    return f"{secrets.randbelow(1_000_000):06d}"
+
+
+def normalize_indian_mobile(raw: str) -> str | None:
+    """Normalise a mobile number to ``+91XXXXXXXXXX`` E.164, or ``None`` if invalid.
+
+    Accepts inputs with spaces/hyphens, an optional ``+91``/``91``/``0`` prefix,
+    then validates the final form against the ``+91[6-9]\\d{9}`` contract.
+    """
+    digits = re.sub(r"[\s\-()]", "", raw)
+    if digits.startswith("+91"):
+        candidate = digits
+    elif digits.startswith("91") and len(digits) == 12:
+        candidate = f"+{digits}"
+    elif digits.startswith("0") and len(digits) == 11:
+        candidate = f"+91{digits[1:]}"
+    elif len(digits) == 10:
+        candidate = f"+91{digits}"
+    else:
+        candidate = digits
+    return candidate if INDIAN_MOBILE_E164.match(candidate) else None
 
 
 def sha256_hex(data: bytes) -> str:

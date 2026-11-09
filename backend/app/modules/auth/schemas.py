@@ -1,51 +1,109 @@
-"""Auth request/response schemas (citizen routes — 4 KB JSON cap)."""
+"""Auth request/response schemas (citizen routes — 4 KB JSON cap).
+
+All request models inherit ``StrictModel`` (``extra='forbid'``). No schema ever
+echoes a submitted mobile number, OTP code or token back to the client.
+"""
 
 from __future__ import annotations
 
+import datetime as dt
 import uuid
+from typing import Literal
 
 from pydantic import Field
 
-from app.core.constants import ClientPlatform, OtpChannel, OtpPurpose, UserRole
+from app.core.constants import ClientPlatform, OtpPurpose, UserRole
 from app.core.schemas import ResponseModel, StrictModel
 
-# E.164 mobile; lenient length bound so the 4 KB middleware cap is the real gate.
-_MOBILE_PATTERN = r"^\+[1-9]\d{6,14}$"
+_HEX64 = r"^[a-f0-9]{64}$"
+_OTP = r"^\d{6}$"
+_MOBILE_E164 = r"^\+91[6-9]\d{9}$"
 
 
-class OtpStartRequest(StrictModel):
-    channel: OtpChannel
+# --------------------------------------------------------------------------- #
+# OTP request / verify
+# --------------------------------------------------------------------------- #
+class OtpRequestPayload(StrictModel):
+    mobile_e164: str = Field(pattern=_MOBILE_E164, max_length=16)
     purpose: OtpPurpose = OtpPurpose.LOGIN_OR_REGISTER
-    mobile_e164: str | None = Field(default=None, pattern=_MOBILE_PATTERN)
-    email: str | None = Field(default=None, max_length=254)
+
+
+class OtpChallengeResponse(ResponseModel):
+    challenge_id: uuid.UUID
+    expires_in_sec: int
+    resend_cooldown_sec: int
+
+
+class OtpVerifyPayload(StrictModel):
+    challenge_id: uuid.UUID
+    otp_code: str = Field(pattern=_OTP)
+    device_fingerprint_hash: str = Field(pattern=_HEX64)
     platform: ClientPlatform = ClientPlatform.WEB
 
 
-class OtpStartResponse(ResponseModel):
-    challenge_id: uuid.UUID
-    expires_in_seconds: int
-    resend_cooldown_seconds: int
+# --------------------------------------------------------------------------- #
+# Tokens
+# --------------------------------------------------------------------------- #
+class WalletSummary(ResponseModel):
+    free_quota_total: int
+    free_quota_used: int
+    free_quota_remaining: int
 
 
-class OtpVerifyRequest(StrictModel):
-    challenge_id: uuid.UUID
-    code: str = Field(min_length=4, max_length=8, pattern=r"^\d{4,8}$")
-    device_fingerprint_hash: str = Field(pattern=r"^[a-f0-9]{64}$")
-    platform: ClientPlatform = ClientPlatform.WEB
-
-
-class TokenPairResponse(ResponseModel):
+class AuthTokensResponse(ResponseModel):
     access_token: str
     refresh_token: str
-    token_type: str = "Bearer"
-    access_expires_in_seconds: int
+    token_type: Literal["Bearer"] = "Bearer"
+    expires_in_sec: int
+    user_id: uuid.UUID
+    wallet_summary: WalletSummary
+
+
+class TokenRefreshPayload(StrictModel):
+    refresh_token: str = Field(min_length=20, max_length=512)
+    device_fingerprint_hash: str = Field(pattern=_HEX64)
+
+
+# --------------------------------------------------------------------------- #
+# Sessions / logout
+# --------------------------------------------------------------------------- #
+class LogoutPayload(StrictModel):
+    revoke_all_devices: bool = False
+
+
+class SessionInfo(ResponseModel):
+    session_id: uuid.UUID
+    platform: ClientPlatform
+    device_fingerprint_hash: str
+    created_at: dt.datetime
+    last_used_at: dt.datetime
+    expires_at: dt.datetime
+    is_current: bool
+
+
+class ActiveSessionListResponse(ResponseModel):
+    sessions: list[SessionInfo]
+
+
+# --------------------------------------------------------------------------- #
+# Account deletion
+# --------------------------------------------------------------------------- #
+class AccountDeletePayload(StrictModel):
+    otp_challenge_id: uuid.UUID
+    otp_code: str = Field(pattern=_OTP)
+    confirmation: Literal["DELETE_MY_ACCOUNT"]
+
+
+class AccountDeletedReceipt(ResponseModel):
+    user_id: uuid.UUID
+    deleted_at: dt.datetime
+    revoked_session_count: int
+    free_quota_tombstoned: int
+    tombstone_expires_at: dt.datetime
+
+
+# --------------------------------------------------------------------------- #
+# Internal role note (kept for OpenAPI completeness; not a request body)
+# --------------------------------------------------------------------------- #
+class RoleInfo(ResponseModel):
     role: UserRole
-    is_mobile_verified: bool
-
-
-class RefreshRequest(StrictModel):
-    refresh_token: str = Field(min_length=10, max_length=512)
-
-
-class LogoutRequest(StrictModel):
-    refresh_token: str = Field(min_length=10, max_length=512)

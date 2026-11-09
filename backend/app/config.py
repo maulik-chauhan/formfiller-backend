@@ -45,13 +45,17 @@ class Settings(BaseSettings):
     otp_hmac_key: str = Field(default="dev-otp-hmac-key-change-me")
     ip_subnet_hash_key: str = Field(default="dev-ip-subnet-hash-key-change-me")
 
-    # Access/refresh JWT (user auth) — HS256 by default for dev.
-    jwt_secret_key: str = Field(default="dev-jwt-secret-change-me")
-    jwt_algorithm: str = "HS256"
+    # ----- Access JWT (EdDSA / Ed25519) -----------------------------------
+    # Access tokens are Ed25519-signed (EdDSA). The signing key is a base64
+    # 32-byte seed kept OUT of git; when empty in a non-production environment
+    # an ephemeral keypair is generated per process (see app/core/security.py).
+    jwt_issuer: str = Field(default="https://api.govforms.in")
+    access_jwt_ed25519_seed_b64: str = Field(default="")
+    access_jwt_kid: str = Field(default="ed25519-access-2026-v1")
     access_token_ttl_minutes: int = 15
     refresh_token_ttl_days: int = 30
 
-    # Ed25519 lease-signing key (base64, 32-byte seed). Dev-only default empty.
+    # Ed25519 lease-signing key (base64, 32-byte seed) — Milestone 5, unused here.
     lease_signing_seed_b64: str = Field(default="")
     lease_signing_key_id: str = "dev-lease-key-1"
 
@@ -59,10 +63,21 @@ class Settings(BaseSettings):
     otp_ttl_seconds: int = 300
     otp_max_attempts: int = 3
     otp_resend_cooldown_seconds: int = 60
+    # Rate limits (ASM-05): OTP request 5/hr per mobile & per IP subnet;
+    # OTP verify 5/min per IP subnet.
+    otp_request_max_per_hour: int = 5
+    otp_verify_max_per_minute_per_ip: int = 5
+    # OTP delivery: "mock" (in-memory, tests) | "console" (dev logs) | "sms" (prod).
+    otp_delivery_provider: str = Field(default="mock")
+    sms_provider_api_key: str = Field(default="")
+    sms_provider_api_secret: str = Field(default="")
+    sms_provider_sender_id: str = Field(default="")
 
     # ----- Commercial (PROVISIONAL — pending product-owner sign-off) ------
-    # COM-01 / COM-02 / ASM-02 — configurable, never seeded unconditionally.
-    default_free_quota_total: int = 2
+    # COM-01: lifetime free quota is NOT finally approved. Left unset (None) it
+    # grants ZERO free credits; set DEFAULT_FREE_QUOTA_TOTAL only once approved.
+    # Never hardcode a value here or in app/core/constants.py.
+    default_free_quota_total: int | None = None
     lease_reservation_ttl_hours: int = 48
     lease_correction_window_hours: int = 24
 
@@ -95,6 +110,44 @@ class Settings(BaseSettings):
     @property
     def is_production(self) -> bool:
         return self.environment in {"production", "prod"}
+
+    @property
+    def resolved_free_quota_total(self) -> int:
+        """Free quota to grant a new wallet.
+
+        COM-01 is unapproved: when the quota is not explicitly configured the
+        platform initialises wallets safely with ZERO free credits rather than
+        assuming the provisional two-form allowance.
+        """
+        return self.default_free_quota_total or 0
+
+    def validate_production_secrets(self) -> None:
+        """Fail fast at startup if production is missing mandatory secrets.
+
+        Blind-index, OTP, IP-subnet and access-token signing keys must each be
+        set to a real, non-default value in production, and the three key classes
+        must be distinct so compromise of one does not expose the others.
+        """
+        if not self.is_production:
+            return
+        defaults = {
+            "blind_index_hmac_key": "dev-blind-index-key-change-me",
+            "otp_hmac_key": "dev-otp-hmac-key-change-me",
+            "ip_subnet_hash_key": "dev-ip-subnet-hash-key-change-me",
+        }
+        missing = [name for name, dev in defaults.items() if getattr(self, name) in {"", dev}]
+        if not self.access_jwt_ed25519_seed_b64:
+            missing.append("access_jwt_ed25519_seed_b64")
+        if missing:
+            raise RuntimeError(f"Missing/insecure production secrets: {', '.join(sorted(missing))}")
+        key_classes = {
+            self.blind_index_hmac_key,
+            self.otp_hmac_key,
+            self.ip_subnet_hash_key,
+            self.access_jwt_ed25519_seed_b64,
+        }
+        if len(key_classes) < 4:
+            raise RuntimeError("Blind-index, OTP, IP-subnet and JWT keys must all be distinct")
 
 
 @lru_cache(maxsize=1)

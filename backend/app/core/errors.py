@@ -51,7 +51,7 @@ class AppError(Exception):
 
 
 class PrivacyBoundaryViolation(AppError):
-    status_code = status.HTTP_422_UNPROCESSABLE_ENTITY
+    status_code = 422
     code = "PRIVACY_BOUNDARY_VIOLATION"
     title = "Request violated the zero-knowledge privacy boundary"
 
@@ -80,6 +80,18 @@ class UnauthorizedError(AppError):
     title = "Unauthorized"
 
 
+class TooManyRequestsError(AppError):
+    status_code = status.HTTP_429_TOO_MANY_REQUESTS
+    code = "RATE_LIMITED"
+    title = "Too many requests"
+
+
+class ValidationFailedError(AppError):
+    status_code = status.HTTP_400_BAD_REQUEST
+    code = "INVALID_REQUEST"
+    title = "Invalid request"
+
+
 def _json(problem: ProblemDetail) -> JSONResponse:
     return JSONResponse(
         status_code=problem.status,
@@ -104,7 +116,7 @@ def register_exception_handlers(app: FastAPI) -> None:
         ]
         problem = ProblemDetail(
             title="Request validation failed",
-            status=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status=422,
             code="VALIDATION_ERROR",
             detail=str(fields),
         )
