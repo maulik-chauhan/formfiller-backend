@@ -30,6 +30,7 @@ _ASYNC_URL = os.environ.get(
 _SYNC_URL = _ASYNC_URL.replace("+asyncpg", "")
 
 _TEST_SEED_B64 = base64.b64encode(bytes(range(32))).decode()
+_TEST_TEMPLATE_SEED_B64 = base64.b64encode(bytes(range(32, 64))).decode()
 
 os.environ.update(
     {
@@ -39,6 +40,8 @@ os.environ.update(
         "OTP_HMAC_KEY": "test-otp-hmac-key",
         "IP_SUBNET_HASH_KEY": "test-ip-subnet-key",
         "ACCESS_JWT_ED25519_SEED_B64": _TEST_SEED_B64,
+        "TEMPLATE_SIGNING_ED25519_SEED_B64": _TEST_TEMPLATE_SEED_B64,
+        "TEMPLATE_STORAGE_DIR": "/tmp/govforms_templates_test",
         # COM-01 is provisional; tests explicitly configure the quota so the
         # quota/restoration logic can be exercised. Production leaves it unset.
         "DEFAULT_FREE_QUOTA_TOTAL": "2",
@@ -133,6 +136,56 @@ async def db_session(db_engine):  # type: ignore[no-untyped-def]
     maker = async_sessionmaker(db_engine, expire_on_commit=False)
     async with maker() as session:
         yield session
+
+
+@pytest_asyncio.fixture
+async def make_principal(db_session):  # type: ignore[no-untyped-def]
+    """Factory creating a persisted user + active session, returning (id, token)."""
+    import datetime as dt
+    import uuid
+
+    from app.core.constants import ClientPlatform, UserRole
+    from app.core.security import create_access_token
+    from app.modules.auth.models import AuthSession, User
+
+    counter = {"n": 0}
+
+    async def _make(role: UserRole = UserRole.CITIZEN) -> tuple[uuid.UUID, str]:
+        counter["n"] += 1
+        n = counter["n"]
+        now = dt.datetime.now(tz=dt.UTC)
+        uid = uuid.uuid4()
+        sid = uuid.uuid4()
+        db_session.add(
+            User(
+                id=uid,
+                mobile_blind_index=f"{n:064x}",
+                blind_index_key_version=1,
+                role=role,
+                account_status="ACTIVE",
+                is_mobile_verified=True,
+                mobile_verified_at=now,
+                last_login_at=now,
+            )
+        )
+        await db_session.flush()  # ensure the user row exists before its session
+        db_session.add(
+            AuthSession(
+                id=sid,
+                user_id=uid,
+                token_family_id=uuid.uuid4(),
+                refresh_token_sha256=f"{(n + 9_000_000):064x}",
+                device_fingerprint_hash="a" * 64,
+                platform=ClientPlatform.WEB,
+                expires_at=now + dt.timedelta(days=1),
+                last_used_at=now,
+            )
+        )
+        await db_session.commit()
+        token = create_access_token(user_id=uid, session_id=sid, role=role)
+        return uid, token
+
+    return _make
 
 
 @pytest_asyncio.fixture

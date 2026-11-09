@@ -59,6 +59,16 @@ class Settings(BaseSettings):
     lease_signing_seed_b64: str = Field(default="")
     lease_signing_key_id: str = "dev-lease-key-1"
 
+    # ----- Template publisher signing (EdDSA / Ed25519) -------------------
+    # Signs published template bundles. Base64 32-byte seed; empty => ephemeral
+    # dev key per process. Kept distinct from the access-token key.
+    template_signing_ed25519_seed_b64: str = Field(default="")
+    template_signing_key_id: str = Field(default="ed25519-template-2026-v1")
+
+    # ----- Template blank-PDF storage ------------------------------------
+    template_storage_dir: str = Field(default="/tmp/govforms_templates")
+    template_cdn_base_url: str = Field(default="https://cdn.govforms.in")
+
     # ----- OTP ------------------------------------------------------------
     otp_ttl_seconds: int = 300
     otp_max_attempts: int = 3

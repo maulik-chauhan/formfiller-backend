@@ -7,7 +7,7 @@ Living milestone tracker. Spec baseline: **v2.1.0**.
 | M1 | Project Foundation | ✅ Complete |
 | M2 | Database Models & Migrations | ✅ Complete |
 | **M3** | **Authentication & Session Security** | ✅ **Complete** |
-| M4 | Template Management & Maker-Checker | ⬜ Not started |
+| **M4** | **Template Management & Maker-Checker** | ✅ **Complete** |
 | M5 | Entitlements, Leases & Offline Lifecycle | ⬜ Not started |
 | M6 | Payments, Webhooks & Refund Lifecycle | ⬜ Not started |
 | M7 | eSign Gateway (Gated) | 🔒 Disabled until compliance sign-off |
@@ -84,5 +84,58 @@ integration + security).
 - Retention windows and the anti-abuse tombstone are technical privacy-by-design
   controls, **subject to formal legal review** (no DPDP compliance is claimed).
 
-## Milestones 4–7 — Not started
+## Milestone 4 — Template Management & Maker-Checker ✅
+
+**Endpoints**
+
+Public / citizen read (PUBLISHED only):
+`GET /api/v1/templates/sources`, `GET /api/v1/templates`, `GET /api/v1/templates/{slug}`,
+`GET /api/v1/templates/{slug}/versions/{semver}/bundle` (Bearer).
+
+Admin:
+`POST /api/v1/admin/domains` (SUPER_ADMIN), `POST /api/v1/admin/sources`,
+`POST /api/v1/admin/sources/{source_id}/checks`, `POST /api/v1/admin/templates`,
+`POST /api/v1/admin/templates/{template_id}/versions` (multipart),
+`POST /api/v1/admin/templates/{template_id}/versions/{version_id}/transitions`
+(TEMPLATE_CURATOR unless noted; SUPER_ADMIN superset).
+
+**Maker-Checker lifecycle**
+`DRAFT → IN_REVIEW → VERIFIED → APPROVED → PUBLISHED → DEPRECATED`, plus rework
+paths back to DRAFT. Permitted transitions and roles are a fixed table; the
+creator cannot verify, and the approver must differ from both creator and
+verifier (enforced in the service AND by the DB `chk_maker_checker_separation`
+constraint). Each transition validates `expected_bundle_sha256`, records a
+`template_approval_logs` row (append-only), and is audited. Publication signs
+`bundle_sha256` with Ed25519 and sets the template's current-published pointer.
+Published versions are immutable (DB trigger verified directly).
+
+**Security validations**
+- Admin blank-PDF upload: route-aware `PrivacyBoundaryMiddleware` (bearer +
+  multipart + 10 MB) then `%PDF-1.` magic check, `pypdf` structural parse,
+  rejection of `/JS`, `/JavaScript`, `/Launch`, `/EmbeddedFiles`, `/OpenAction`,
+  `/AA`, and any populated AcroForm `/V` (no citizen data can enter).
+- Government source/template URLs validated against `approved_source_domains`
+  via DB triggers (unapproved hosts rejected 422).
+- Citizens see only PUBLISHED versions; draft/in-review/verified/approved-but-
+  unpublished remain private; bundle access requires auth and verifies the
+  Ed25519 signature before returning.
+
+**Database changes:** none. All M4 behaviour uses the existing M2 tables and
+triggers. Migration unchanged.
+
+**New environment variables:** `TEMPLATE_SIGNING_ED25519_SEED_B64`,
+`TEMPLATE_SIGNING_KEY_ID`, `TEMPLATE_STORAGE_DIR`, `TEMPLATE_CDN_BASE_URL`.
+New dependency: `python-multipart`.
+
+**Quality gates (executed):** `ruff check .` ✅ · `ruff format --check .` ✅ ·
+`mypy --strict app` ✅ (47 files) · `pytest` ✅ **102 passed** (M1–M4, incl.
+PostgreSQL integration + security). Published-immutability trigger verified live.
+
+**Known limitations / pending production integrations**
+- Blank-PDF storage is a local filesystem adapter; production should swap the
+  `ObjectStoragePort` for an S3-compatible / signed-CDN implementation.
+- Automated source-checksum polling (`SCHEDULED_STATIC_PDF_CHECK`) is modelled
+  but not scheduled; checks are admin-recorded for now.
+
+## Milestones 5–7 — Not started
 Out of scope for this pass. eSign remains disabled (`503`) until M7 sign-off.

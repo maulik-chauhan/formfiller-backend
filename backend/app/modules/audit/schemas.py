@@ -27,6 +27,18 @@ ALLOWED_AUDIT_METADATA_KEYS: frozenset[str] = frozenset(
         "lease_id",
         "order_id",
         "refund_id",
+        # Template / source administration (M4) — identifiers and states only.
+        "domain_pattern",
+        "source_id",
+        "source_code",
+        "template_id",
+        "version_id",
+        "slug",
+        "semver",
+        "from_status",
+        "to_status",
+        "target_status",
+        "check_result",
     }
 )
 

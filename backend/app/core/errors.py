@@ -87,7 +87,9 @@ class TooManyRequestsError(AppError):
 
 
 class ValidationFailedError(AppError):
-    status_code = status.HTTP_400_BAD_REQUEST
+    # 422: the request is well-formed but semantically invalid (e.g. references
+    # an unapproved domain or a non-existent parent resource).
+    status_code = 422
     code = "INVALID_REQUEST"
     title = "Invalid request"
 
