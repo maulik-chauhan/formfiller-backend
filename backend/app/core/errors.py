@@ -100,6 +100,12 @@ class GoneError(AppError):
     title = "Resource no longer available"
 
 
+class GatewayError(AppError):
+    status_code = status.HTTP_502_BAD_GATEWAY
+    code = "PAYMENT_GATEWAY_ERROR"
+    title = "Payment gateway error"
+
+
 class PaymentRequiredError(AppError):
     status_code = status.HTTP_402_PAYMENT_REQUIRED
     code = "PAYMENT_REQUIRED"

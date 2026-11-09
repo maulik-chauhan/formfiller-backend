@@ -9,7 +9,7 @@ Living milestone tracker. Spec baseline: **v2.1.0**.
 | **M3** | **Authentication & Session Security** | ✅ **Complete** |
 | **M4** | **Template Management & Maker-Checker** | ✅ **Complete** |
 | **M5** | **Entitlements, Leases & Offline Lifecycle** | ✅ **Complete** |
-| M6 | Payments, Webhooks & Refund Lifecycle | ⬜ Not started |
+| **M6** | **Payments, Webhooks & Refund Lifecycle** | ✅ **Complete** |
 | M7 | eSign Gateway (Gated) | 🔒 Disabled until compliance sign-off |
 
 ---
@@ -197,5 +197,65 @@ verification). Acceptance A–G all covered.
 - Rupee pricing rows are not seeded (payment is M6); upgrade reads the wallet
   bucket, not a price.
 
-## Milestones 6–7 — Not started
-Out of scope for this pass. eSign remains disabled (`503`) until M7 sign-off.
+## Milestone 6 — Payments, Webhooks & Refund Lifecycle ✅
+
+No schema change was required: `pricing_catalog`, `payment_orders`,
+`payment_refunds`, `payment_webhook_events` and the partial unique index
+`uq_ledger_paid_credit_per_order` already exist from M1/M2.
+
+**Endpoints (`/api/v1/payments`)**
+`GET /pricing` (public), `POST /orders` (Bearer + `Idempotency-Key`),
+`POST /orders/{order_id}/verify` (Bearer + `Idempotency-Key`),
+`POST /webhooks/razorpay` (`X-Razorpay-Signature`, raw body, 64 KB cap).
+
+**Pricing** is database-driven: only active, in-effect SKUs are returned, amounts
+in integer paise, `tax = total_payable − base − surcharge`, eSign SKUs excluded.
+Provisional ₹20/₹50/₹30 values are **not** seeded in production — the catalog is
+configured explicitly (tests seed their own rows). The client never supplies an
+amount (`extra="forbid"`).
+
+**Orders** are priced and created server-side; the gateway `create_order` runs
+before any row is persisted (a timeout leaves no order), and idempotency is
+enforced by `uq_payment_orders_user_idempotency`.
+
+**Signatures** — payment (`HMAC-SHA256(secret,'<order>|<payment>')`) and webhook
+(`HMAC-SHA256(webhook_secret, raw_body)`) verified with constant-time compare; a
+forged signature never credits a wallet; the frontend callback is never trusted.
+
+**Exactly-once fulfilment** — `credit_order_idempotently` locks `payment_orders`
+`FOR UPDATE` (`populate_existing` to refresh under the lock), returns without
+mutation if already `CAPTURED`, else locks the wallet, credits the paid bucket,
+appends one `PAID_CREDIT` ledger entry (backed by `uq_ledger_paid_credit_per_order`),
+and is shared by sync verify and the webhook. A concurrent verify + `payment.captured`
+race credits the wallet exactly once (tested with separate PostgreSQL sessions).
+
+**Webhooks** — raw-body HMAC first; the `X-Razorpay-Event-Id` dedup row is inserted
+in the *same* transaction as processing, so a genuine duplicate returns
+`ALREADY_PROCESSED` and a processing failure rolls back both (never a false
+"processed"). Unknown events are `IGNORED`.
+
+**Refunds (all 7 scenarios)** — available-credit debit, reserved-lease revocation
+(`REVOKED_REFUND`), post-consumption flag (`REFUNDED_POST_CONSUMPTION`, never
+negative), partial refunds with the cumulative `base_amount_paise` revocation
+threshold counted once, failed refunds (wallet/order untouched), duplicate-webhook
+and concurrent-same-refund dedup (via `gateway_refund_id` uniqueness within a
+SAVEPOINT). Each appends the correct hash-chained ledger entry.
+
+**New environment variables:** `RAZORPAY_ENVIRONMENT`, `RAZORPAY_API_BASE`,
+`RAZORPAY_GATEWAY_MODE`, `RAZORPAY_HTTP_TIMEOUT_SECONDS`, `PAYMENT_MAX_QUANTITY`
+(plus the existing `RAZORPAY_KEY_ID/KEY_SECRET/WEBHOOK_SECRET`). Fake gateway is
+the local/test default; secrets are never logged or returned.
+
+**Quality gates (executed):** `ruff check .` ✅ · `ruff format --check .` ✅ ·
+`mypy --strict app` ✅ (54 files) · `pytest` ✅ **162 passed** (M1–M6, incl.
+PostgreSQL concurrency with separate sessions and ledger-chain verification).
+
+**Known limitations / production integration**
+- Real `HttpRazorpayGateway` HTTP calls are implemented but exercised only in
+  live mode; automated tests use the deterministic fake gateway.
+- Refunds are reconciled from the authoritative `refund.processed`/`refund.failed`
+  webhooks; a separate admin-initiated refund-initiation endpoint is out of M6
+  scope (the `initiate_refund` provider method is ready for it).
+
+## Milestone 7 — Not started
+Out of scope. eSign remains disabled (`503`) and eSign SKUs stay gated until M7 sign-off.

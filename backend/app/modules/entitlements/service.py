@@ -167,9 +167,29 @@ def _debit_available(wallet: EntitlementWallet, bucket: CreditBucket) -> bool:
     return True
 
 
-# Public aliases for cross-module reuse (e.g. the reaper worker).
+def credit_available(wallet: EntitlementWallet, bucket: CreditBucket, n: int = 1) -> None:
+    """Credit ``n`` units to a paid bucket's available balance (M6 fulfilment)."""
+    if bucket == CB.FREE_LIFETIME:
+        raise ValueError("free bucket is not credited via payment")
+    avail_col, _ = _PAID_COLS[bucket]
+    setattr(wallet, avail_col, getattr(wallet, avail_col) + n)
+    wallet.version_lock += 1
+
+
+def remove_reserved(wallet: EntitlementWallet, bucket: CreditBucket) -> None:
+    """Remove one reserved paid credit without restoring availability (refund)."""
+    if bucket == CB.FREE_LIFETIME:
+        wallet.free_quota_reserved -= 1
+    else:
+        _, res_col = _PAID_COLS[bucket]
+        setattr(wallet, res_col, getattr(wallet, res_col) - 1)
+    wallet.version_lock += 1
+
+
+# Public aliases for cross-module reuse (e.g. the reaper worker and payments).
 bucket_balances = _bucket_balances
 release_reserved = _release_reserved
+debit_available = _debit_available
 
 
 # ---- shared ledger append (used by the service and the reaper) ----------- #
@@ -199,6 +219,8 @@ async def append_ledger(
     reserved_after: int,
     idempotency_key: str,
     reference_lease_id: uuid.UUID | None = None,
+    reference_payment_order_id: uuid.UUID | None = None,
+    reference_refund_id: uuid.UUID | None = None,
 ) -> None:
     """Append one hash-chained ledger entry (caller controls the transaction)."""
     seq, prev = await ledger_tip(session, user_id)
@@ -227,6 +249,8 @@ async def append_ledger(
             available_balance_after=available_after,
             reserved_balance_after=reserved_after,
             reference_lease_id=reference_lease_id,
+            reference_payment_order_id=reference_payment_order_id,
+            reference_refund_id=reference_refund_id,
             idempotency_key=idempotency_key,
             prev_entry_hash=prev,
             entry_hash=entry_hash,

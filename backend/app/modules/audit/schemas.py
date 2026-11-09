@@ -48,6 +48,17 @@ ALLOWED_AUDIT_METADATA_KEYS: frozenset[str] = frozenset(
         "lease_status",
         "commit_count",
         "entry_type",
+        # Payments (M6) — identifiers, SKUs and non-sensitive amounts only.
+        "sku_code",
+        "quantity",
+        "gateway_event_id",
+        "event_type",
+        "payment_status",
+        "refund_status",
+        "reconciliation_action",
+        "amount_paise",
+        "total_amount_paise",
+        "refund_amount_paise",
     }
 )
 

@@ -107,6 +107,24 @@ class Settings(BaseSettings):
     razorpay_key_id: str = Field(default="")
     razorpay_key_secret: str = Field(default="")
     razorpay_webhook_secret: str = Field(default="")
+    razorpay_environment: str = Field(default="test")  # "test" | "live"
+    razorpay_api_base: str = Field(default="https://api.razorpay.com/v1")
+    # Gateway network mode: "fake" (in-memory, dev/tests) | "http" (real API) |
+    # "auto" (http in production with creds, fake otherwise).
+    razorpay_gateway_mode: str = Field(default="auto")
+    razorpay_http_timeout_seconds: float = 15.0
+    # DB fixes payment_orders.quantity = 1; this bounds the accepted value.
+    payment_max_quantity: int = 1
+
+    @property
+    def razorpay_use_fake_gateway(self) -> bool:
+        mode = self.razorpay_gateway_mode.lower()
+        if mode == "fake":
+            return True
+        if mode == "http":
+            return False
+        # auto
+        return not (self.is_production and self.razorpay_key_id and self.razorpay_key_secret)
 
     # ----- Module gating --------------------------------------------------
     esign_module_enabled: bool = False

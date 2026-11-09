@@ -45,6 +45,10 @@ os.environ.update(
         "TEMPLATE_STORAGE_DIR": "/tmp/govforms_templates_test",
         "LEASE_SIGNING_SEED_B64": _TEST_ELT_SEED_B64,
         "LEASE_SIGNING_KEY_ID": "ed25519-elt-2026-v1",
+        "RAZORPAY_KEY_ID": "rzp_test_key_id",
+        "RAZORPAY_KEY_SECRET": "rzp_test_key_secret",
+        "RAZORPAY_WEBHOOK_SECRET": "rzp_test_webhook_secret",
+        "RAZORPAY_GATEWAY_MODE": "fake",
         # COM-01 is provisional; tests explicitly configure the quota so the
         # quota/restoration logic can be exercised. Production leaves it unset.
         "DEFAULT_FREE_QUOTA_TOTAL": "2",
@@ -195,6 +199,63 @@ async def make_principal(db_session):  # type: ignore[no-untyped-def]
         return uid, token
 
     return _make
+
+
+@pytest_asyncio.fixture
+async def pricing(db_session):  # type: ignore[no-untyped-def]
+    """Seed an active pricing catalog (test-controlled; production stays unseeded)."""
+    from app.modules.payments.models import PricingCatalog
+
+    rows: list[dict[str, object]] = [
+        # STD_FORM_20: GST exclusive → tax = 2360-2000 = 360.
+        {
+            "sku_code": "STD_FORM_20",
+            "display_name": "Standard Form",
+            "credit_bucket": "STANDARD_20",
+            "base_amount_paise": 2000,
+            "esp_surcharge_paise": 0,
+            "gst_rate_bps": 1800,
+            "is_gst_inclusive": False,
+            "total_payable_paise": 2360,
+        },
+        # SIG_IMAGE_50: inclusive with a surcharge component.
+        {
+            "sku_code": "SIG_IMAGE_50",
+            "display_name": "Signature Bundle",
+            "credit_bucket": "SIGNATURE_50",
+            "base_amount_paise": 5000,
+            "esp_surcharge_paise": 500,
+            "gst_rate_bps": 1800,
+            "is_gst_inclusive": True,
+            "total_payable_paise": 5500,
+        },
+        {
+            "sku_code": "SIG_UPGRADE_30",
+            "display_name": "Signature Upgrade",
+            "credit_bucket": "SIGNATURE_UPGRADE_30",
+            "base_amount_paise": 3000,
+            "esp_surcharge_paise": 0,
+            "gst_rate_bps": 1800,
+            "is_gst_inclusive": True,
+            "total_payable_paise": 3000,
+        },
+        # eSign SKU present but INACTIVE and gated during M6.
+        {
+            "sku_code": "ESIGN_OTP_CDAC",
+            "display_name": "eSign",
+            "credit_bucket": "ESIGN",
+            "base_amount_paise": 10000,
+            "esp_surcharge_paise": 0,
+            "gst_rate_bps": 1800,
+            "is_gst_inclusive": True,
+            "total_payable_paise": 10000,
+            "is_active": False,
+        },
+    ]
+    for r in rows:
+        db_session.add(PricingCatalog(**r))
+    await db_session.commit()
+    return {r["sku_code"]: r for r in rows}
 
 
 @pytest_asyncio.fixture
