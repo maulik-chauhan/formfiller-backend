@@ -1,0 +1,56 @@
+{
+  "warning": "TEST KEY ONLY. Never pin this key in a staging or production build.",
+  "kid": "ed25519-template-2026-v1",
+  "public_key_b64": "Kay64UG8yvCyLhqU000LxzYeUm0L/hLIl5S8kyKWbdc=",
+  "v1": {
+    "fields": {
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "semver": "1.0.0",
+      "blank_pdf_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "page_count": 3,
+      "slug": "ror-7-12",
+      "jurisdiction": "KARNATAKA_STATE",
+      "category": "REVENUE",
+      "official_form_code": "7/12",
+      "template_version_id": "22222222-2222-4222-8222-222222222222",
+      "signature_format_version": 1
+    },
+    "digest": "78edbc04d105c7b90948b423ee92c2bdbee99abd1558a57ffebd092006f2346d",
+    "signature": "hiDg3xkcqI7RDjEXPPYbxPCkNmgUZm3e7DSGCydmF+EirODKpUkJ+X/DFedq+ydfmTdfuOww3fZCETU/mykpDw=="
+  },
+  "v2": {
+    "fields": {
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "semver": "1.0.0",
+      "blank_pdf_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "page_count": 3,
+      "slug": "ror-7-12",
+      "jurisdiction": "KARNATAKA_STATE",
+      "category": "REVENUE",
+      "official_form_code": "7/12",
+      "template_version_id": "22222222-2222-4222-8222-222222222222",
+      "signature_format_version": 2
+    },
+    "digest": "cc6e150aeeac4b290077614e608558dbcbbde4e99d24e37819a2c0220bfc7a6f",
+    "signature": "JMb+p1tHDBUvP/DfU1lEPNeJzBLSbERpQ/1yEgWsIIV36/F5D5V7nfPXDxgrNexS686x/ggD348ulbqIWyoKAA=="
+  },
+  "v2_multibyte_and_delimiter": {
+    "fields": {
+      "template_id": "11111111-1111-4111-8111-111111111111",
+      "semver": "1.0.0",
+      "blank_pdf_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+      "page_count": 12,
+      "slug": "ror-7-12",
+      "jurisdiction": "KARNATAKA_STATE",
+      "category": "REVENUE",
+      "official_form_code": "फ़ॉर्म|7/12",
+      "template_version_id": "22222222-2222-4222-8222-222222222222",
+      "signature_format_version": 2
+    },
+    "digest": "e86a5abf8ea8bb2401c9ebd3a7db0b2a3afdd2a7bbe3e177650b083724613047",
+    "signature": "ZOeUvFiuexFcnUwhSnbV4bhe/A2TatobqHMC0jiivJFl+R/MsWQz4H4iuEAEorkRZt1Utla7Itikpv1l54wFAw=="
+  }
+}

@@ -1,0 +1,69 @@
+{
+  "description": "A select must declare its options.",
+  "expect_code": "options_invalid",
+  "manifest": {
+    "schema_version": 1,
+    "kind": "govforms.form-manifest",
+    "identity": {
+      "slug": "test-dropdown-checkbox",
+      "jurisdiction": "CENTRAL_INDIA",
+      "category": "WELFARE",
+      "official_form_code": "TEST-FIXTURE-004",
+      "semver": "1.0.0",
+      "page_count": 2,
+      "blank_pdf_sha256": "2f193405d62820952d2c372e505b6204a93f2194ebe7f0c5609758eae0ceabc2"
+    },
+    "sections": [
+      {
+        "id": "main",
+        "title": "Choices",
+        "fields": [
+          {
+            "id": "delivery",
+            "type": "select",
+            "label": "Delivery",
+            "required": true,
+            "default": "collect",
+            "pdf": [
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 73,
+                "y": 631,
+                "size": 10,
+                "mark": "cross",
+                "on_value": "collect"
+              },
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 163,
+                "y": 631,
+                "size": 10,
+                "mark": "cross",
+                "on_value": "post"
+              }
+            ]
+          },
+          {
+            "id": "urgent",
+            "type": "checkbox",
+            "label": "Urgent",
+            "required": false,
+            "default": false,
+            "pdf": [
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 73,
+                "y": 607,
+                "size": 10,
+                "mark": "check"
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

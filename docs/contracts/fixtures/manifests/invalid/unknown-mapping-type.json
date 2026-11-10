@@ -1,0 +1,45 @@
+{
+  "description": "An unknown PDF mapping type is rejected.",
+  "expect_code": "mapping_type_unsupported",
+  "manifest": {
+    "schema_version": 1,
+    "kind": "govforms.form-manifest",
+    "identity": {
+      "slug": "test-simple-text",
+      "jurisdiction": "CENTRAL_INDIA",
+      "category": "WELFARE",
+      "official_form_code": "TEST-FIXTURE-001",
+      "semver": "1.0.0",
+      "page_count": 2,
+      "blank_pdf_sha256": "2f193405d62820952d2c372e505b6204a93f2194ebe7f0c5609758eae0ceabc2"
+    },
+    "sections": [
+      {
+        "id": "main",
+        "title": "Details",
+        "fields": [
+          {
+            "id": "full_name",
+            "type": "text",
+            "label": "Full name",
+            "required": true,
+            "pdf": [
+              {
+                "type": "barcode_at",
+                "page": 0,
+                "x": 76,
+                "y": 723,
+                "width": 292,
+                "height": 14,
+                "font": "Helvetica",
+                "size": 11,
+                "align": "left",
+                "multiline": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -1,0 +1,273 @@
+{
+  "schema_version": 1,
+  "kind": "govforms.form-manifest",
+  "identity": {
+    "slug": "test-fillable-form",
+    "jurisdiction": "CENTRAL_INDIA",
+    "category": "WELFARE",
+    "official_form_code": "TEST-FIXTURE-007",
+    "semver": "1.0.0",
+    "page_count": 2,
+    "blank_pdf_sha256": "5c3af5f83d9ee1fd0e2ea4a43b7150fa4881530120944e2bdb0ce7bf863aebc3"
+  },
+  "sections": [
+    {
+      "id": "applicant",
+      "title": "Applicant",
+      "description": "Test section: who is applying.",
+      "fields": [
+        {
+          "id": "full_name",
+          "type": "text",
+          "label": "Full name",
+          "help": "As it should appear on the form.",
+          "required": true,
+          "validation": {
+            "min_length": 2,
+            "max_length": 60,
+            "pattern": "alpha_space"
+          },
+          "profile_key": "full_name",
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "applicant.full_name",
+              "transform": "uppercase"
+            }
+          ]
+        },
+        {
+          "id": "date_of_birth",
+          "type": "date",
+          "label": "Date of birth",
+          "required": true,
+          "validation": {
+            "min_date": "1900-01-01",
+            "not_future": true
+          },
+          "profile_key": "date_of_birth",
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "applicant.dob",
+              "date_format": "DD/MM/YYYY"
+            }
+          ]
+        },
+        {
+          "id": "contact_method",
+          "type": "radio",
+          "label": "Preferred contact",
+          "required": true,
+          "options": [
+            {
+              "value": "post",
+              "label": "Post"
+            },
+            {
+              "value": "phone",
+              "label": "Phone"
+            },
+            {
+              "value": "email",
+              "label": "Email"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "acro_radio",
+              "field_name": "applicant.contact_method",
+              "options": {
+                "post": "post",
+                "phone": "phone",
+                "email": "email"
+              }
+            }
+          ]
+        },
+        {
+          "id": "mobile",
+          "type": "text",
+          "label": "Mobile number",
+          "help": "Ten digits, without +91.",
+          "required": true,
+          "validation": {
+            "pattern": "mobile_in"
+          },
+          "visible_when": {
+            "field": "contact_method",
+            "op": "equals",
+            "value": "phone"
+          },
+          "profile_key": "mobile",
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "applicant.mobile"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "address",
+      "title": "Address",
+      "fields": [
+        {
+          "id": "home_address",
+          "type": "address",
+          "label": "Home address",
+          "required": true,
+          "profile_keys": {
+            "line1": "address_line_1",
+            "line2": "address_line_2",
+            "city": "city",
+            "district": "district",
+            "state": "state",
+            "pincode": "pin_code"
+          },
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "address.full",
+              "source": "full"
+            },
+            {
+              "type": "acro_text",
+              "field_name": "address.pincode",
+              "source": "pincode"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "details",
+      "title": "Request details",
+      "fields": [
+        {
+          "id": "service_type",
+          "type": "select",
+          "label": "Service type",
+          "required": true,
+          "default": "standard",
+          "options": [
+            {
+              "value": "standard",
+              "label": "Standard"
+            },
+            {
+              "value": "priority",
+              "label": "Priority"
+            },
+            {
+              "value": "express",
+              "label": "Express"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "acro_dropdown",
+              "field_name": "details.service_type",
+              "options": {
+                "standard": "STANDARD",
+                "priority": "PRIORITY",
+                "express": "EXPRESS"
+              }
+            }
+          ]
+        },
+        {
+          "id": "fee_waiver",
+          "type": "checkbox",
+          "label": "Request a fee waiver",
+          "required": false,
+          "pdf": [
+            {
+              "type": "acro_checkbox",
+              "field_name": "details.fee_waiver"
+            }
+          ]
+        },
+        {
+          "id": "dependants",
+          "type": "number",
+          "label": "Number of dependants",
+          "required": true,
+          "validation": {
+            "min": 0,
+            "max": 20
+          },
+          "visible_when": {
+            "field": "fee_waiver",
+            "op": "is_checked"
+          },
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "details.dependants"
+            }
+          ]
+        },
+        {
+          "id": "remarks",
+          "type": "multiline",
+          "label": "Remarks",
+          "required": false,
+          "validation": {
+            "max_length": 400
+          },
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "details.remarks"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "declaration",
+      "title": "Declaration",
+      "fields": [
+        {
+          "id": "agree",
+          "type": "checkbox",
+          "label": "I confirm the details are correct",
+          "required": true,
+          "pdf": [
+            {
+              "type": "acro_checkbox",
+              "field_name": "declaration.agree"
+            }
+          ]
+        },
+        {
+          "id": "declaration_date",
+          "type": "date",
+          "label": "Date of declaration",
+          "required": true,
+          "validation": {
+            "not_future": true
+          },
+          "pdf": [
+            {
+              "type": "acro_text",
+              "field_name": "declaration.date",
+              "date_format": "DD-MM-YYYY"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "rules": [
+    {
+      "id": "declared_after_birth",
+      "type": "date_not_before",
+      "field": "declaration_date",
+      "other_field": "date_of_birth",
+      "message": "The declaration date cannot be before the date of birth."
+    }
+  ]
+}

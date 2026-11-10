@@ -1,0 +1,102 @@
+[
+  {
+    "name": "empty-object",
+    "value": {},
+    "canonical": "{}",
+    "sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a"
+  },
+  {
+    "name": "key-order",
+    "value": {
+      "b": 1,
+      "a": 2,
+      "aa": 3,
+      "B": 4
+    },
+    "canonical": "{\"B\":4,\"a\":2,\"aa\":3,\"b\":1}",
+    "sha256": "b0917df19443b623d1a075d6c14d8e8de027403c4b34046f4f21e100c5a7480f"
+  },
+  {
+    "name": "nested",
+    "value": {
+      "z": [
+        3,
+        {
+          "y": null,
+          "x": true
+        }
+      ],
+      "a": {
+        "c": false,
+        "b": []
+      }
+    },
+    "canonical": "{\"a\":{\"b\":[],\"c\":false},\"z\":[3,{\"x\":true,\"y\":null}]}",
+    "sha256": "62f2346766cdf5d2d5e5b97b584ebce06ff4d0ef0d9dbc0019379580941538ea"
+  },
+  {
+    "name": "integers",
+    "value": {
+      "zero": 0,
+      "neg": -7,
+      "big": 9007199254740991
+    },
+    "canonical": "{\"big\":9007199254740991,\"neg\":-7,\"zero\":0}",
+    "sha256": "49cc418113fe7a7f390abd2be38bdc1cb6649a31dc90d13027628d8fe7067b44"
+  },
+  {
+    "name": "ascii-escapes",
+    "value": {
+      "s": "quote \" backslash \\ slash / tab \t newline \n cr \r"
+    },
+    "canonical": "{\"s\":\"quote \\\" backslash \\\\ slash / tab \\t newline \\n cr \\r\"}",
+    "sha256": "1109431a9150fb696b8d1576153bd3f7c1dee5a3aacfe807c58142a9fa5d9428"
+  },
+  {
+    "name": "control-chars",
+    "value": {
+      "s": "\u0000\u0001\u001f\b\f"
+    },
+    "canonical": "{\"s\":\"\\u0000\\u0001\\u001f\\u007f\\b\\f\"}",
+    "sha256": "27d2f21a38cebdf7e2feea868db72fbe6c2e26cf96d47aad72b1d783117ed3b9"
+  },
+  {
+    "name": "non-ascii-bmp",
+    "value": {
+      "name": "फ़ॉर्म",
+      "city": "Bengaluru – ಬೆಂಗಳೂರು",
+      "sym": "₹ é ñ"
+    },
+    "canonical": "{\"city\":\"Bengaluru \\u2013 \\u0cac\\u0cc6\\u0c82\\u0c97\\u0cb3\\u0cc2\\u0cb0\\u0cc1\",\"name\":\"\\u092b\\u093c\\u0949\\u0930\\u094d\\u092e\",\"sym\":\"\\u20b9 \\u00e9 \\u00f1\"}",
+    "sha256": "5d4f8447bb34c0fcf2cad41172641ad731501284ba074b6582a5b27b144c7d4b"
+  },
+  {
+    "name": "astral",
+    "value": {
+      "emoji": "😀",
+      "key😀": "v"
+    },
+    "canonical": "{\"emoji\":\"\\ud83d\\ude00\",\"key\\ud83d\\ude00\":\"v\"}",
+    "sha256": "b0e95aa2647cab49c3a515b433feb328e1a7c41b1cf6b274f305e05b45cf14c5"
+  },
+  {
+    "name": "non-ascii-key-order",
+    "value": {
+      "é": 1,
+      "z": 2,
+      "ಕ": 3,
+      "😀": 4,
+      "￿": 5
+    },
+    "canonical": "{\"z\":2,\"\\u00e9\":1,\"\\u0c95\":3,\"\\uffff\":5,\"\\ud83d\\ude00\":4}",
+    "sha256": "139256a0ab4bd375d44c9c81c96d37b32c5fe78f7f8e23143a113e6ffe91ca99"
+  },
+  {
+    "name": "html-sensitive",
+    "value": {
+      "s": "<script>&'</script>  "
+    },
+    "canonical": "{\"s\":\"<script>&'</script>\\u2028\\u2029\"}",
+    "sha256": "fd1132ab855a914d48c65bfb3f27fa727a58ebf1cdfd0c164cbe8152d3c92b81"
+  }
+]

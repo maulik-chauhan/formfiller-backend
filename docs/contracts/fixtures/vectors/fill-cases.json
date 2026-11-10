@@ -1,0 +1,311 @@
+{
+  "today": "2026-11-10",
+  "cases": [
+    {
+      "name": "fillable-complete",
+      "manifest": "fillable-acroform",
+      "answers": {
+        "full_name": "Asha Test",
+        "date_of_birth": "1990-02-28",
+        "contact_method": "phone",
+        "mobile": "9876543210",
+        "home_address": {
+          "line1": "12 Test Lane",
+          "line2": "",
+          "city": "Sampleville",
+          "district": "North",
+          "state": "Karnataka",
+          "pincode": "560001"
+        },
+        "service_type": "priority",
+        "fee_waiver": true,
+        "dependants": 2,
+        "remarks": "Line one\nLine two",
+        "agree": true,
+        "declaration_date": "2026-11-10"
+      },
+      "expect_errors": {},
+      "expect_visible": [
+        "full_name",
+        "date_of_birth",
+        "contact_method",
+        "mobile",
+        "home_address",
+        "service_type",
+        "fee_waiver",
+        "dependants",
+        "remarks",
+        "agree",
+        "declaration_date"
+      ],
+      "expect_print": [
+        {
+          "target": "applicant.full_name",
+          "kind": "text",
+          "text": "ASHA TEST"
+        },
+        {
+          "target": "applicant.dob",
+          "kind": "text",
+          "text": "28/02/1990"
+        },
+        {
+          "target": "applicant.contact_method",
+          "kind": "radio",
+          "select": "phone"
+        },
+        {
+          "target": "applicant.mobile",
+          "kind": "text",
+          "text": "9876543210"
+        },
+        {
+          "target": "address.full",
+          "kind": "text",
+          "text": "12 Test Lane\nSampleville, North\nKarnataka - 560001"
+        },
+        {
+          "target": "address.pincode",
+          "kind": "text",
+          "text": "560001"
+        },
+        {
+          "target": "details.service_type",
+          "kind": "dropdown",
+          "select": "PRIORITY"
+        },
+        {
+          "target": "details.fee_waiver",
+          "kind": "checkbox",
+          "checked": true
+        },
+        {
+          "target": "details.dependants",
+          "kind": "text",
+          "text": "2"
+        },
+        {
+          "target": "details.remarks",
+          "kind": "text",
+          "text": "Line one\nLine two"
+        },
+        {
+          "target": "declaration.agree",
+          "kind": "checkbox",
+          "checked": true
+        },
+        {
+          "target": "declaration.date",
+          "kind": "text",
+          "text": "10-11-2026"
+        }
+      ]
+    },
+    {
+      "name": "fillable-hidden-fields-not-printed",
+      "manifest": "fillable-acroform",
+      "answers": {
+        "full_name": "Asha Test",
+        "date_of_birth": "1990-02-28",
+        "contact_method": "post",
+        "mobile": "not-a-number",
+        "home_address": {
+          "line1": "12 Test Lane",
+          "line2": "",
+          "city": "Sampleville",
+          "district": "North",
+          "state": "Karnataka",
+          "pincode": "560001"
+        },
+        "service_type": "priority",
+        "fee_waiver": false,
+        "dependants": 99,
+        "remarks": "Line one\nLine two",
+        "agree": true,
+        "declaration_date": "2026-11-10"
+      },
+      "expect_errors": {},
+      "expect_visible": [
+        "full_name",
+        "date_of_birth",
+        "contact_method",
+        "home_address",
+        "service_type",
+        "fee_waiver",
+        "remarks",
+        "agree",
+        "declaration_date"
+      ],
+      "expect_print_absent": [
+        "applicant.mobile",
+        "details.dependants"
+      ],
+      "expect_print": [
+        {
+          "target": "applicant.contact_method",
+          "kind": "radio",
+          "select": "post"
+        },
+        {
+          "target": "details.fee_waiver",
+          "kind": "checkbox",
+          "checked": false
+        }
+      ]
+    },
+    {
+      "name": "fillable-errors",
+      "manifest": "fillable-acroform",
+      "answers": {
+        "full_name": "A",
+        "date_of_birth": "2027-01-01",
+        "contact_method": "phone",
+        "mobile": "12345",
+        "home_address": {
+          "line1": "",
+          "line2": "",
+          "city": "Sampleville",
+          "district": "North",
+          "state": "Karnataka",
+          "pincode": "012345"
+        },
+        "service_type": "teleport",
+        "fee_waiver": true,
+        "dependants": 21,
+        "agree": false,
+        "declaration_date": "2026-11-10"
+      },
+      "expect_errors": {
+        "full_name": "min_length",
+        "date_of_birth": "not_future",
+        "mobile": "pattern",
+        "home_address": "address_incomplete",
+        "service_type": "not_an_option",
+        "dependants": "max",
+        "agree": "required",
+        "declaration_date": "rule:declared_after_birth"
+      }
+    },
+    {
+      "name": "fillable-empty",
+      "manifest": "fillable-acroform",
+      "answers": {},
+      "expect_errors": {
+        "full_name": "required",
+        "date_of_birth": "required",
+        "contact_method": "required",
+        "home_address": "required",
+        "service_type": "required",
+        "agree": "required",
+        "declaration_date": "required"
+      }
+    },
+    {
+      "name": "conditional-required-if",
+      "manifest": "conditional",
+      "answers": {
+        "delivery": "post",
+        "urgent": true
+      },
+      "expect_errors": {
+        "postal_pincode": "required",
+        "reason": "rule:urgent_needs_reason"
+      },
+      "expect_visible": [
+        "delivery",
+        "postal_pincode",
+        "urgent",
+        "reason"
+      ]
+    },
+    {
+      "name": "conditional-collect",
+      "manifest": "conditional",
+      "answers": {
+        "delivery": "collect"
+      },
+      "expect_errors": {},
+      "expect_visible": [
+        "delivery",
+        "urgent"
+      ],
+      "expect_print": [
+        {
+          "target": "mark:0:73:631",
+          "kind": "mark",
+          "mark": "cross"
+        }
+      ],
+      "expect_print_absent": [
+        "mark:0:163:631",
+        "mark:0:73:607"
+      ]
+    },
+    {
+      "name": "coordinate-complete",
+      "manifest": "coordinate-mapped",
+      "answers": {
+        "full_name": "Ravi Example",
+        "event_date": "2026-01-05",
+        "count": 7,
+        "delivery": "post",
+        "urgent": true,
+        "home_address": {
+          "line1": "12 Test Lane",
+          "line2": "Block B",
+          "city": "Sampleville",
+          "district": "North",
+          "state": "Karnataka",
+          "pincode": "560001"
+        },
+        "notes": "Fictional note."
+      },
+      "expect_errors": {},
+      "expect_print": [
+        {
+          "target": "text:0:76:723",
+          "kind": "text",
+          "text": "Ravi Example"
+        },
+        {
+          "target": "text:0:76:677",
+          "kind": "text",
+          "text": "05.01.2026"
+        },
+        {
+          "target": "text:0:244:677",
+          "kind": "text",
+          "text": "7"
+        },
+        {
+          "target": "mark:0:163:631",
+          "kind": "mark",
+          "mark": "cross"
+        },
+        {
+          "target": "mark:0:73:607",
+          "kind": "mark",
+          "mark": "check"
+        },
+        {
+          "target": "text:0:76:508",
+          "kind": "text",
+          "text": "12 Test Lane\nBlock B\nSampleville, North\nKarnataka - 560001"
+        },
+        {
+          "target": "text:0:76:463",
+          "kind": "text",
+          "text": "560001"
+        },
+        {
+          "target": "text:1:76:626",
+          "kind": "text",
+          "text": "Fictional note."
+        }
+      ],
+      "expect_print_absent": [
+        "mark:0:73:631"
+      ]
+    }
+  ]
+}

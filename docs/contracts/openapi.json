@@ -1,0 +1,3918 @@
+{
+  "components": {
+    "schemas": {
+      "AccountDeletePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "confirmation": {
+            "const": "DELETE_MY_ACCOUNT",
+            "title": "Confirmation",
+            "type": "string"
+          },
+          "otp_challenge_id": {
+            "format": "uuid",
+            "title": "Otp Challenge Id",
+            "type": "string"
+          },
+          "otp_code": {
+            "pattern": "^\\d{6}$",
+            "title": "Otp Code",
+            "type": "string"
+          }
+        },
+        "required": [
+          "otp_challenge_id",
+          "otp_code",
+          "confirmation"
+        ],
+        "title": "AccountDeletePayload",
+        "type": "object"
+      },
+      "AccountDeletedReceipt": {
+        "properties": {
+          "deleted_at": {
+            "format": "date-time",
+            "title": "Deleted At",
+            "type": "string"
+          },
+          "free_quota_tombstoned": {
+            "title": "Free Quota Tombstoned",
+            "type": "integer"
+          },
+          "revoked_session_count": {
+            "title": "Revoked Session Count",
+            "type": "integer"
+          },
+          "tombstone_expires_at": {
+            "format": "date-time",
+            "title": "Tombstone Expires At",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "deleted_at",
+          "revoked_session_count",
+          "free_quota_tombstoned",
+          "tombstone_expires_at"
+        ],
+        "title": "AccountDeletedReceipt",
+        "type": "object"
+      },
+      "ActiveSessionListResponse": {
+        "properties": {
+          "sessions": {
+            "items": {
+              "$ref": "#/components/schemas/SessionInfo"
+            },
+            "title": "Sessions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "sessions"
+        ],
+        "title": "ActiveSessionListResponse",
+        "type": "object"
+      },
+      "AdminCreateApprovedDomainPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_subdomains": {
+            "default": true,
+            "title": "Allow Subdomains",
+            "type": "boolean"
+          },
+          "domain_pattern": {
+            "maxLength": 120,
+            "minLength": 3,
+            "pattern": "^[a-z0-9.-]+$",
+            "title": "Domain Pattern",
+            "type": "string"
+          },
+          "domain_type": {
+            "$ref": "#/components/schemas/DomainPatternType"
+          },
+          "rationale": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain_pattern",
+          "domain_type",
+          "rationale"
+        ],
+        "title": "AdminCreateApprovedDomainPayload",
+        "type": "object"
+      },
+      "AdminCreateGovSourcePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "allow_automated_checksum_check": {
+            "default": false,
+            "title": "Allow Automated Checksum Check",
+            "type": "boolean"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "matched_domain_pattern": {
+            "maxLength": 120,
+            "minLength": 3,
+            "title": "Matched Domain Pattern",
+            "type": "string"
+          },
+          "ministry_or_department": {
+            "maxLength": 160,
+            "minLength": 2,
+            "title": "Ministry Or Department",
+            "type": "string"
+          },
+          "official_portal_url": {
+            "maxLength": 512,
+            "pattern": "^https://[a-z0-9.-]+(/.*)?$",
+            "title": "Official Portal Url",
+            "type": "string"
+          },
+          "source_code": {
+            "maxLength": 64,
+            "minLength": 2,
+            "pattern": "^[A-Z0-9_]+$",
+            "title": "Source Code",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/SourceType"
+          }
+        },
+        "required": [
+          "source_code",
+          "jurisdiction",
+          "ministry_or_department",
+          "official_portal_url",
+          "matched_domain_pattern",
+          "source_type"
+        ],
+        "title": "AdminCreateGovSourcePayload",
+        "type": "object"
+      },
+      "AdminCreateTemplatePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "localized_descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "minProperties": 1,
+            "title": "Localized Descriptions",
+            "type": "object"
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "minProperties": 1,
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "maxLength": 64,
+            "minLength": 1,
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "slug": {
+            "maxLength": 80,
+            "minLength": 2,
+            "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "government_source_id",
+          "slug",
+          "jurisdiction",
+          "official_form_code",
+          "category",
+          "localized_titles",
+          "localized_descriptions"
+        ],
+        "title": "AdminCreateTemplatePayload",
+        "type": "object"
+      },
+      "AdminRecordSourceCheckPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "check_method": {
+            "$ref": "#/components/schemas/SourceCheckMethod"
+          },
+          "check_result": {
+            "$ref": "#/components/schemas/SourceCheckResult"
+          },
+          "checked_url": {
+            "maxLength": 512,
+            "pattern": "^https://[a-z0-9.-]+(/.*)?$",
+            "title": "Checked Url",
+            "type": "string"
+          },
+          "etag_header": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Etag Header"
+          },
+          "http_status_code": {
+            "anyOf": [
+              {
+                "maximum": 599.0,
+                "minimum": 100.0,
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status Code"
+          },
+          "last_modified_header": {
+            "anyOf": [
+              {
+                "maxLength": 128,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Modified Header"
+          },
+          "observed_pdf_sha256": {
+            "anyOf": [
+              {
+                "pattern": "^[a-f0-9]{64}$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Pdf Sha256"
+          },
+          "template_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Version Id"
+          }
+        },
+        "required": [
+          "checked_url",
+          "check_method",
+          "check_result"
+        ],
+        "title": "AdminRecordSourceCheckPayload",
+        "type": "object"
+      },
+      "AdminStateTransitionPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "deprecation_reason": {
+            "anyOf": [
+              {
+                "maxLength": 200,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecation Reason"
+          },
+          "expected_bundle_sha256": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Expected Bundle Sha256",
+            "type": "string"
+          },
+          "replaced_by_template_slug": {
+            "anyOf": [
+              {
+                "maxLength": 80,
+                "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By Template Slug"
+          },
+          "review_notes": {
+            "maxLength": 2000,
+            "minLength": 1,
+            "title": "Review Notes",
+            "type": "string"
+          },
+          "target_status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          }
+        },
+        "required": [
+          "target_status",
+          "expected_bundle_sha256",
+          "review_notes"
+        ],
+        "title": "AdminStateTransitionPayload",
+        "type": "object"
+      },
+      "AdminTemplateResponse": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_published_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Published Version Id"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "localized_descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Descriptions",
+            "type": "object"
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "id",
+          "government_source_id",
+          "slug",
+          "jurisdiction",
+          "official_form_code",
+          "category",
+          "localized_titles",
+          "localized_descriptions",
+          "current_published_version_id",
+          "is_active",
+          "created_at"
+        ],
+        "title": "AdminTemplateResponse",
+        "type": "object"
+      },
+      "AdminTemplateVersionResponse": {
+        "properties": {
+          "approved_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By Admin Id"
+          },
+          "blank_pdf_sha256": {
+            "title": "Blank Pdf Sha256",
+            "type": "string"
+          },
+          "blank_pdf_size_bytes": {
+            "title": "Blank Pdf Size Bytes",
+            "type": "integer"
+          },
+          "bundle_sha256": {
+            "title": "Bundle Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_admin_id": {
+            "format": "uuid",
+            "title": "Created By Admin Id",
+            "type": "string"
+          },
+          "deprecation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecation Reason"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "manifest_sha256": {
+            "title": "Manifest Sha256",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "publisher_ed25519_sig": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher Ed25519 Sig"
+          },
+          "replaced_by_template_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By Template Slug"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "signature_format_version": {
+            "title": "Signature Format Version",
+            "type": "integer"
+          },
+          "signing_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signing Key Id"
+          },
+          "source_pdf_download_url": {
+            "title": "Source Pdf Download Url",
+            "type": "string"
+          },
+          "source_url_matched_domain": {
+            "title": "Source Url Matched Domain",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          },
+          "verified_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified By Admin Id"
+          }
+        },
+        "required": [
+          "id",
+          "template_id",
+          "semver",
+          "status",
+          "source_pdf_download_url",
+          "source_url_matched_domain",
+          "blank_pdf_sha256",
+          "blank_pdf_size_bytes",
+          "page_count",
+          "manifest_sha256",
+          "bundle_sha256",
+          "signing_key_id",
+          "publisher_ed25519_sig",
+          "signature_format_version",
+          "deprecation_reason",
+          "replaced_by_template_slug",
+          "created_by_admin_id",
+          "verified_by_admin_id",
+          "approved_by_admin_id",
+          "published_at",
+          "created_at"
+        ],
+        "title": "AdminTemplateVersionResponse",
+        "type": "object"
+      },
+      "ApprovedDomainResponse": {
+        "properties": {
+          "allow_subdomains": {
+            "title": "Allow Subdomains",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "domain_pattern": {
+            "title": "Domain Pattern",
+            "type": "string"
+          },
+          "domain_type": {
+            "$ref": "#/components/schemas/DomainPatternType"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "rationale": {
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "domain_pattern",
+          "domain_type",
+          "allow_subdomains",
+          "rationale",
+          "is_active",
+          "created_at"
+        ],
+        "title": "ApprovedDomainResponse",
+        "type": "object"
+      },
+      "AuthTokensResponse": {
+        "properties": {
+          "access_token": {
+            "title": "Access Token",
+            "type": "string"
+          },
+          "expires_in_sec": {
+            "title": "Expires In Sec",
+            "type": "integer"
+          },
+          "refresh_token": {
+            "title": "Refresh Token",
+            "type": "string"
+          },
+          "token_type": {
+            "const": "Bearer",
+            "default": "Bearer",
+            "title": "Token Type",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          },
+          "wallet_summary": {
+            "$ref": "#/components/schemas/WalletSummary"
+          }
+        },
+        "required": [
+          "access_token",
+          "refresh_token",
+          "expires_in_sec",
+          "user_id",
+          "wallet_summary"
+        ],
+        "title": "AuthTokensResponse",
+        "type": "object"
+      },
+      "Body_upload_template_version_api_v1_admin_templates__template_id__versions_post": {
+        "properties": {
+          "blank_pdf": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Blank Pdf",
+            "type": "string"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "manifest_json": {
+            "title": "Manifest Json",
+            "type": "string"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "source_downloaded_at": {
+            "title": "Source Downloaded At",
+            "type": "string"
+          },
+          "source_pdf_download_url": {
+            "title": "Source Pdf Download Url",
+            "type": "string"
+          },
+          "source_url_matched_domain": {
+            "title": "Source Url Matched Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "blank_pdf",
+          "semver",
+          "source_pdf_download_url",
+          "source_url_matched_domain",
+          "source_downloaded_at",
+          "government_source_id",
+          "manifest_json"
+        ],
+        "title": "Body_upload_template_version_api_v1_admin_templates__template_id__versions_post",
+        "type": "object"
+      },
+      "ClientPlatform": {
+        "description": "Stored in ``auth_sessions.platform``.",
+        "enum": [
+          "WEB",
+          "ANDROID",
+          "IOS"
+        ],
+        "title": "ClientPlatform",
+        "type": "string"
+      },
+      "CommitLeasePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "client_completion_receipt_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Client Completion Receipt Hash",
+            "type": "string"
+          },
+          "completed_at_client_iso": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Completed At Client Iso"
+          },
+          "draft_instance_id_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Draft Instance Id Hash",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_instance_id_hash",
+          "client_completion_receipt_hash"
+        ],
+        "title": "CommitLeasePayload",
+        "type": "object"
+      },
+      "CreateLeasePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "device_fingerprint_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Device Fingerprint Hash",
+            "type": "string"
+          },
+          "draft_instance_id_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Draft Instance Id Hash",
+            "type": "string"
+          },
+          "requested_tier": {
+            "$ref": "#/components/schemas/RequestedLeaseTier"
+          },
+          "template_version_id": {
+            "format": "uuid",
+            "title": "Template Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template_version_id",
+          "requested_tier",
+          "draft_instance_id_hash",
+          "device_fingerprint_hash"
+        ],
+        "title": "CreateLeasePayload",
+        "type": "object"
+      },
+      "CreatePaymentOrderPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "quantity": {
+            "default": 1,
+            "maximum": 1.0,
+            "minimum": 1.0,
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "sku_code": {
+            "$ref": "#/components/schemas/SkuCode"
+          }
+        },
+        "required": [
+          "sku_code"
+        ],
+        "title": "CreatePaymentOrderPayload",
+        "type": "object"
+      },
+      "DomainPatternType": {
+        "description": "Stored in ``approved_source_domains.domain_type``.",
+        "enum": [
+          "GOV_TLD_SUFFIX",
+          "STATUTORY_EXACT_HOST"
+        ],
+        "title": "DomainPatternType",
+        "type": "string"
+      },
+      "GovernmentSourceCheckResponse": {
+        "properties": {
+          "check_method": {
+            "$ref": "#/components/schemas/SourceCheckMethod"
+          },
+          "check_result": {
+            "$ref": "#/components/schemas/SourceCheckResult"
+          },
+          "checked_at": {
+            "format": "date-time",
+            "title": "Checked At",
+            "type": "string"
+          },
+          "checked_url": {
+            "title": "Checked Url",
+            "type": "string"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "http_status_code": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Http Status Code"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "observed_pdf_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Observed Pdf Sha256"
+          },
+          "template_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Template Version Id"
+          }
+        },
+        "required": [
+          "id",
+          "government_source_id",
+          "template_version_id",
+          "checked_url",
+          "check_method",
+          "http_status_code",
+          "observed_pdf_sha256",
+          "check_result",
+          "checked_at"
+        ],
+        "title": "GovernmentSourceCheckResponse",
+        "type": "object"
+      },
+      "GovernmentSourceListResponse": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "sources": {
+            "items": {
+              "$ref": "#/components/schemas/GovernmentSourceResponse"
+            },
+            "title": "Sources",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sources",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "GovernmentSourceListResponse",
+        "type": "object"
+      },
+      "GovernmentSourceResponse": {
+        "properties": {
+          "allow_automated_checksum_check": {
+            "title": "Allow Automated Checksum Check",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "last_verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Verified At"
+          },
+          "matched_domain_pattern": {
+            "title": "Matched Domain Pattern",
+            "type": "string"
+          },
+          "ministry_or_department": {
+            "title": "Ministry Or Department",
+            "type": "string"
+          },
+          "official_portal_url": {
+            "title": "Official Portal Url",
+            "type": "string"
+          },
+          "source_code": {
+            "title": "Source Code",
+            "type": "string"
+          },
+          "source_type": {
+            "$ref": "#/components/schemas/SourceType"
+          }
+        },
+        "required": [
+          "id",
+          "source_code",
+          "jurisdiction",
+          "ministry_or_department",
+          "official_portal_url",
+          "matched_domain_pattern",
+          "source_type",
+          "allow_automated_checksum_check",
+          "is_active",
+          "last_verified_at",
+          "created_at"
+        ],
+        "title": "GovernmentSourceResponse",
+        "type": "object"
+      },
+      "GrantedEntitlementTier": {
+        "description": "Stored in ``entitlement_leases.granted_tier`` and the ELT ``tier`` claim.",
+        "enum": [
+          "FREE_STANDARD",
+          "PAID_STANDARD_20",
+          "PAID_SIGNATURE_50",
+          "FREE_UPGRADED_SIG_50",
+          "PAID_UPGRADED_SIG_50",
+          "PAID_ESIGN"
+        ],
+        "title": "GrantedEntitlementTier",
+        "type": "string"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "title": "Detail",
+            "type": "array"
+          }
+        },
+        "title": "HTTPValidationError",
+        "type": "object"
+      },
+      "Jurisdiction": {
+        "description": "Stored in ``government_sources.jurisdiction`` and ``form_templates.jurisdiction``.",
+        "enum": [
+          "CENTRAL_INDIA",
+          "KARNATAKA_STATE"
+        ],
+        "title": "Jurisdiction",
+        "type": "string"
+      },
+      "LeaseCapabilities": {
+        "properties": {
+          "allow_cca_esign": {
+            "title": "Allow Cca Esign",
+            "type": "boolean"
+          },
+          "allow_handwritten_signature_image": {
+            "title": "Allow Handwritten Signature Image",
+            "type": "boolean"
+          },
+          "allow_local_pdf_export": {
+            "title": "Allow Local Pdf Export",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "allow_local_pdf_export",
+          "allow_handwritten_signature_image",
+          "allow_cca_esign"
+        ],
+        "title": "LeaseCapabilities",
+        "type": "object"
+      },
+      "LeaseCommittedResponse": {
+        "properties": {
+          "commit_count": {
+            "title": "Commit Count",
+            "type": "integer"
+          },
+          "correction_window_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Window Expires At"
+          },
+          "first_committed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "First Committed At"
+          },
+          "last_committed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Last Committed At"
+          },
+          "lease_id": {
+            "format": "uuid",
+            "title": "Lease Id",
+            "type": "string"
+          },
+          "lease_status": {
+            "$ref": "#/components/schemas/LeaseStatus"
+          },
+          "re_export_allowed_until": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Re Export Allowed Until"
+          },
+          "refreshed_offline_lease_jwt": {
+            "title": "Refreshed Offline Lease Jwt",
+            "type": "string"
+          },
+          "signing_key_id": {
+            "title": "Signing Key Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "lease_id",
+          "lease_status",
+          "commit_count",
+          "first_committed_at",
+          "last_committed_at",
+          "correction_window_expires_at",
+          "re_export_allowed_until",
+          "refreshed_offline_lease_jwt",
+          "signing_key_id"
+        ],
+        "title": "LeaseCommittedResponse",
+        "type": "object"
+      },
+      "LeaseIssuedResponse": {
+        "properties": {
+          "capabilities": {
+            "$ref": "#/components/schemas/LeaseCapabilities"
+          },
+          "correction_window_expires_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Correction Window Expires At"
+          },
+          "granted_tier": {
+            "$ref": "#/components/schemas/GrantedEntitlementTier"
+          },
+          "is_upgraded_with_sig_30": {
+            "title": "Is Upgraded With Sig 30",
+            "type": "boolean"
+          },
+          "lease_id": {
+            "format": "uuid",
+            "title": "Lease Id",
+            "type": "string"
+          },
+          "lease_status": {
+            "$ref": "#/components/schemas/LeaseStatus"
+          },
+          "offline_lease_jwt": {
+            "title": "Offline Lease Jwt",
+            "type": "string"
+          },
+          "reservation_expires_at": {
+            "format": "date-time",
+            "title": "Reservation Expires At",
+            "type": "string"
+          },
+          "signing_key_id": {
+            "title": "Signing Key Id",
+            "type": "string"
+          },
+          "template_version_id": {
+            "format": "uuid",
+            "title": "Template Version Id",
+            "type": "string"
+          },
+          "wallet_snapshot": {
+            "$ref": "#/components/schemas/WalletSnapshot"
+          }
+        },
+        "required": [
+          "lease_id",
+          "template_version_id",
+          "granted_tier",
+          "is_upgraded_with_sig_30",
+          "lease_status",
+          "capabilities",
+          "reservation_expires_at",
+          "correction_window_expires_at",
+          "offline_lease_jwt",
+          "signing_key_id",
+          "wallet_snapshot"
+        ],
+        "title": "LeaseIssuedResponse",
+        "type": "object"
+      },
+      "LeaseReleasedResponse": {
+        "properties": {
+          "lease_id": {
+            "format": "uuid",
+            "title": "Lease Id",
+            "type": "string"
+          },
+          "lease_status": {
+            "$ref": "#/components/schemas/LeaseStatus"
+          },
+          "released_at": {
+            "format": "date-time",
+            "title": "Released At",
+            "type": "string"
+          },
+          "wallet_snapshot": {
+            "$ref": "#/components/schemas/WalletSnapshot"
+          }
+        },
+        "required": [
+          "lease_id",
+          "lease_status",
+          "released_at",
+          "wallet_snapshot"
+        ],
+        "title": "LeaseReleasedResponse",
+        "type": "object"
+      },
+      "LeaseStatus": {
+        "description": "Stored in ``entitlement_leases.lease_status``.",
+        "enum": [
+          "ISSUED",
+          "COMMITTED",
+          "RELEASED",
+          "EXPIRED_RELEASED",
+          "REVOKED_REFUND"
+        ],
+        "title": "LeaseStatus",
+        "type": "string"
+      },
+      "LogoutPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "revoke_all_devices": {
+            "default": false,
+            "title": "Revoke All Devices",
+            "type": "boolean"
+          }
+        },
+        "title": "LogoutPayload",
+        "type": "object"
+      },
+      "OtpChallengeResponse": {
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "expires_in_sec": {
+            "title": "Expires In Sec",
+            "type": "integer"
+          },
+          "resend_cooldown_sec": {
+            "title": "Resend Cooldown Sec",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "expires_in_sec",
+          "resend_cooldown_sec"
+        ],
+        "title": "OtpChallengeResponse",
+        "type": "object"
+      },
+      "OtpPurpose": {
+        "description": "Stored in ``otp_challenges.purpose``.",
+        "enum": [
+          "LOGIN_OR_REGISTER",
+          "LINK_EMAIL",
+          "ACCOUNT_DELETE"
+        ],
+        "title": "OtpPurpose",
+        "type": "string"
+      },
+      "OtpRequestPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "mobile_e164": {
+            "maxLength": 16,
+            "pattern": "^\\+91[6-9]\\d{9}$",
+            "title": "Mobile E164",
+            "type": "string"
+          },
+          "purpose": {
+            "$ref": "#/components/schemas/OtpPurpose",
+            "default": "LOGIN_OR_REGISTER"
+          }
+        },
+        "required": [
+          "mobile_e164"
+        ],
+        "title": "OtpRequestPayload",
+        "type": "object"
+      },
+      "OtpVerifyPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "challenge_id": {
+            "format": "uuid",
+            "title": "Challenge Id",
+            "type": "string"
+          },
+          "device_fingerprint_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Device Fingerprint Hash",
+            "type": "string"
+          },
+          "otp_code": {
+            "pattern": "^\\d{6}$",
+            "title": "Otp Code",
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/ClientPlatform",
+            "default": "WEB"
+          }
+        },
+        "required": [
+          "challenge_id",
+          "otp_code",
+          "device_fingerprint_hash"
+        ],
+        "title": "OtpVerifyPayload",
+        "type": "object"
+      },
+      "PaidWalletSnapshot": {
+        "properties": {
+          "paid_sig_50_available": {
+            "title": "Paid Sig 50 Available",
+            "type": "integer"
+          },
+          "paid_std_20_available": {
+            "title": "Paid Std 20 Available",
+            "type": "integer"
+          },
+          "paid_upgrade_30_available": {
+            "title": "Paid Upgrade 30 Available",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "paid_std_20_available",
+          "paid_sig_50_available",
+          "paid_upgrade_30_available"
+        ],
+        "title": "PaidWalletSnapshot",
+        "type": "object"
+      },
+      "PaymentOrderCreatedResponse": {
+        "properties": {
+          "base_amount_paise": {
+            "title": "Base Amount Paise",
+            "type": "integer"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "esp_surcharge_paise": {
+            "title": "Esp Surcharge Paise",
+            "type": "integer"
+          },
+          "gateway_order_id": {
+            "title": "Gateway Order Id",
+            "type": "string"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentOrderStatus"
+          },
+          "quantity": {
+            "title": "Quantity",
+            "type": "integer"
+          },
+          "razorpay_key_id": {
+            "title": "Razorpay Key Id",
+            "type": "string"
+          },
+          "sku_code": {
+            "title": "Sku Code",
+            "type": "string"
+          },
+          "tax_amount_paise": {
+            "title": "Tax Amount Paise",
+            "type": "integer"
+          },
+          "total_amount_paise": {
+            "title": "Total Amount Paise",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "order_id",
+          "gateway_order_id",
+          "sku_code",
+          "quantity",
+          "base_amount_paise",
+          "esp_surcharge_paise",
+          "tax_amount_paise",
+          "total_amount_paise",
+          "currency",
+          "razorpay_key_id",
+          "payment_status"
+        ],
+        "title": "PaymentOrderCreatedResponse",
+        "type": "object"
+      },
+      "PaymentOrderStatus": {
+        "description": "Stored in ``payment_orders.payment_status``.",
+        "enum": [
+          "CREATED",
+          "AUTHORIZED",
+          "CAPTURED",
+          "FAILED",
+          "PARTIALLY_REFUNDED",
+          "REFUNDED",
+          "REFUNDED_POST_CONSUMPTION"
+        ],
+        "title": "PaymentOrderStatus",
+        "type": "string"
+      },
+      "PaymentVerifiedResponse": {
+        "properties": {
+          "credited": {
+            "title": "Credited",
+            "type": "boolean"
+          },
+          "order_id": {
+            "format": "uuid",
+            "title": "Order Id",
+            "type": "string"
+          },
+          "payment_status": {
+            "$ref": "#/components/schemas/PaymentOrderStatus"
+          },
+          "wallet_snapshot": {
+            "$ref": "#/components/schemas/PaidWalletSnapshot"
+          }
+        },
+        "required": [
+          "order_id",
+          "payment_status",
+          "credited",
+          "wallet_snapshot"
+        ],
+        "title": "PaymentVerifiedResponse",
+        "type": "object"
+      },
+      "PricingCatalogResponse": {
+        "properties": {
+          "skus": {
+            "items": {
+              "$ref": "#/components/schemas/PricingSkuEntry"
+            },
+            "title": "Skus",
+            "type": "array"
+          }
+        },
+        "required": [
+          "skus"
+        ],
+        "title": "PricingCatalogResponse",
+        "type": "object"
+      },
+      "PricingSkuEntry": {
+        "properties": {
+          "base_amount_paise": {
+            "title": "Base Amount Paise",
+            "type": "integer"
+          },
+          "credit_bucket": {
+            "title": "Credit Bucket",
+            "type": "string"
+          },
+          "currency": {
+            "title": "Currency",
+            "type": "string"
+          },
+          "display_name": {
+            "title": "Display Name",
+            "type": "string"
+          },
+          "esp_surcharge_paise": {
+            "title": "Esp Surcharge Paise",
+            "type": "integer"
+          },
+          "gst_rate_bps": {
+            "title": "Gst Rate Bps",
+            "type": "integer"
+          },
+          "hsn_sac_code": {
+            "title": "Hsn Sac Code",
+            "type": "string"
+          },
+          "is_gst_inclusive": {
+            "title": "Is Gst Inclusive",
+            "type": "boolean"
+          },
+          "sku_code": {
+            "title": "Sku Code",
+            "type": "string"
+          },
+          "tax_amount_paise": {
+            "title": "Tax Amount Paise",
+            "type": "integer"
+          },
+          "total_payable_paise": {
+            "title": "Total Payable Paise",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sku_code",
+          "display_name",
+          "credit_bucket",
+          "currency",
+          "base_amount_paise",
+          "esp_surcharge_paise",
+          "gst_rate_bps",
+          "is_gst_inclusive",
+          "tax_amount_paise",
+          "total_payable_paise",
+          "hsn_sac_code"
+        ],
+        "title": "PricingSkuEntry",
+        "type": "object"
+      },
+      "PublicKeyEntry": {
+        "properties": {
+          "alg": {
+            "title": "Alg",
+            "type": "string"
+          },
+          "crv": {
+            "title": "Crv",
+            "type": "string"
+          },
+          "kid": {
+            "title": "Kid",
+            "type": "string"
+          },
+          "public_key_b64": {
+            "title": "Public Key B64",
+            "type": "string"
+          },
+          "status": {
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kid",
+          "alg",
+          "crv",
+          "public_key_b64",
+          "status"
+        ],
+        "title": "PublicKeyEntry",
+        "type": "object"
+      },
+      "PublicKeySetResponse": {
+        "properties": {
+          "elt_typ": {
+            "default": "ELT+jwt",
+            "title": "Elt Typ",
+            "type": "string"
+          },
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/PublicKeyEntry"
+            },
+            "title": "Keys",
+            "type": "array"
+          }
+        },
+        "required": [
+          "keys"
+        ],
+        "title": "PublicKeySetResponse",
+        "type": "object"
+      },
+      "PublishedTemplateDetailResponse": {
+        "properties": {
+          "blank_pdf_sha256": {
+            "title": "Blank Pdf Sha256",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "government_source_code": {
+            "title": "Government Source Code",
+            "type": "string"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "localized_descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Descriptions",
+            "type": "object"
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "published_semver": {
+            "title": "Published Semver",
+            "type": "string"
+          },
+          "published_version_id": {
+            "format": "uuid",
+            "title": "Published Version Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template_id",
+          "slug",
+          "jurisdiction",
+          "category",
+          "official_form_code",
+          "localized_titles",
+          "localized_descriptions",
+          "government_source_code",
+          "published_semver",
+          "published_version_id",
+          "blank_pdf_sha256",
+          "page_count"
+        ],
+        "title": "PublishedTemplateDetailResponse",
+        "type": "object"
+      },
+      "PublishedTemplateListResponse": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/PublishedTemplateSummary"
+            },
+            "title": "Templates",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "templates",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "PublishedTemplateListResponse",
+        "type": "object"
+      },
+      "PublishedTemplateSummary": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "published_semver": {
+            "title": "Published Semver",
+            "type": "string"
+          },
+          "published_version_id": {
+            "format": "uuid",
+            "title": "Published Version Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "jurisdiction",
+          "category",
+          "official_form_code",
+          "localized_titles",
+          "published_semver",
+          "published_version_id"
+        ],
+        "title": "PublishedTemplateSummary",
+        "type": "object"
+      },
+      "PublisherKeyEntry": {
+        "properties": {
+          "alg": {
+            "const": "EdDSA",
+            "default": "EdDSA",
+            "title": "Alg",
+            "type": "string"
+          },
+          "crv": {
+            "const": "Ed25519",
+            "default": "Ed25519",
+            "title": "Crv",
+            "type": "string"
+          },
+          "current_signature_format_version": {
+            "title": "Current Signature Format Version",
+            "type": "integer"
+          },
+          "kid": {
+            "title": "Kid",
+            "type": "string"
+          },
+          "public_key_b64": {
+            "title": "Public Key B64",
+            "type": "string"
+          },
+          "purpose": {
+            "const": "template-publisher",
+            "default": "template-publisher",
+            "title": "Purpose",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "active",
+              "previous"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "kid",
+          "public_key_b64",
+          "status",
+          "current_signature_format_version"
+        ],
+        "title": "PublisherKeyEntry",
+        "type": "object"
+      },
+      "PublisherKeySetResponse": {
+        "properties": {
+          "keys": {
+            "items": {
+              "$ref": "#/components/schemas/PublisherKeyEntry"
+            },
+            "title": "Keys",
+            "type": "array"
+          },
+          "trust_note": {
+            "title": "Trust Note",
+            "type": "string"
+          }
+        },
+        "required": [
+          "keys",
+          "trust_note"
+        ],
+        "title": "PublisherKeySetResponse",
+        "type": "object"
+      },
+      "ReleaseLeasePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "draft_instance_id_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Draft Instance Id Hash",
+            "type": "string"
+          },
+          "unconsumed_attestation_hmac": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Unconsumed Attestation Hmac",
+            "type": "string"
+          }
+        },
+        "required": [
+          "draft_instance_id_hash",
+          "unconsumed_attestation_hmac"
+        ],
+        "title": "ReleaseLeasePayload",
+        "type": "object"
+      },
+      "RequestedLeaseTier": {
+        "description": "Accepted values in ``CreateLeasePayload.requested_tier``.",
+        "enum": [
+          "FREE_STANDARD",
+          "PAID_STANDARD_20",
+          "PAID_SIGNATURE_50",
+          "PAID_ESIGN"
+        ],
+        "title": "RequestedLeaseTier",
+        "type": "string"
+      },
+      "SessionInfo": {
+        "properties": {
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "device_fingerprint_hash": {
+            "title": "Device Fingerprint Hash",
+            "type": "string"
+          },
+          "expires_at": {
+            "format": "date-time",
+            "title": "Expires At",
+            "type": "string"
+          },
+          "is_current": {
+            "title": "Is Current",
+            "type": "boolean"
+          },
+          "last_used_at": {
+            "format": "date-time",
+            "title": "Last Used At",
+            "type": "string"
+          },
+          "platform": {
+            "$ref": "#/components/schemas/ClientPlatform"
+          },
+          "session_id": {
+            "format": "uuid",
+            "title": "Session Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "session_id",
+          "platform",
+          "device_fingerprint_hash",
+          "created_at",
+          "last_used_at",
+          "expires_at",
+          "is_current"
+        ],
+        "title": "SessionInfo",
+        "type": "object"
+      },
+      "SkuCode": {
+        "description": "Pricing SKU codes (``pricing_catalog.sku_code``, upgrade ``upgrade_sku``).",
+        "enum": [
+          "STD_FORM_20",
+          "SIG_IMAGE_50",
+          "SIG_UPGRADE_30",
+          "ESIGN_OTP_CDAC"
+        ],
+        "title": "SkuCode",
+        "type": "string"
+      },
+      "SourceCheckMethod": {
+        "description": "Stored in ``government_source_checks.check_method``.",
+        "enum": [
+          "ADMIN_MANUAL_UPLOAD",
+          "ADMIN_ASSISTED_HEAD",
+          "SCHEDULED_STATIC_PDF_CHECK"
+        ],
+        "title": "SourceCheckMethod",
+        "type": "string"
+      },
+      "SourceCheckResult": {
+        "description": "Stored in ``government_source_checks.check_result``.",
+        "enum": [
+          "INITIAL_INGEST",
+          "UNCHANGED",
+          "CHECKSUM_CHANGED",
+          "HTTP_ERROR"
+        ],
+        "title": "SourceCheckResult",
+        "type": "string"
+      },
+      "SourceType": {
+        "description": "Stored in ``government_sources.source_type``.",
+        "enum": [
+          "OFFICIAL_GOV_PORTAL",
+          "STATUTORY_BODY"
+        ],
+        "title": "SourceType",
+        "type": "string"
+      },
+      "TemplateBundleManifestResponse": {
+        "description": "Everything a client needs to verify a published template independently.\n\n``signature_verified`` is the *server* checking its own signature. It is not\nclient-side proof: clients must recompute the digest and verify the Ed25519\nsignature against a publisher key pinned in their own build.",
+        "properties": {
+          "blank_pdf_download_url": {
+            "title": "Blank Pdf Download Url",
+            "type": "string"
+          },
+          "blank_pdf_download_url_expires": {
+            "title": "Blank Pdf Download Url Expires",
+            "type": "boolean"
+          },
+          "blank_pdf_sha256": {
+            "title": "Blank Pdf Sha256",
+            "type": "string"
+          },
+          "bundle_sha256": {
+            "title": "Bundle Sha256",
+            "type": "string"
+          },
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "field_mapping_manifest": {
+            "additionalProperties": true,
+            "title": "Field Mapping Manifest",
+            "type": "object"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "manifest_sha256": {
+            "title": "Manifest Sha256",
+            "type": "string"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "publisher_ed25519_sig": {
+            "title": "Publisher Ed25519 Sig",
+            "type": "string"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "signature_alg": {
+            "const": "EdDSA",
+            "default": "EdDSA",
+            "title": "Signature Alg",
+            "type": "string"
+          },
+          "signature_format_version": {
+            "title": "Signature Format Version",
+            "type": "integer"
+          },
+          "signature_verified": {
+            "title": "Signature Verified",
+            "type": "boolean"
+          },
+          "signing_key_id": {
+            "title": "Signing Key Id",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          },
+          "template_version_id": {
+            "format": "uuid",
+            "title": "Template Version Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "template_id",
+          "slug",
+          "jurisdiction",
+          "category",
+          "official_form_code",
+          "semver",
+          "template_version_id",
+          "blank_pdf_sha256",
+          "blank_pdf_download_url",
+          "blank_pdf_download_url_expires",
+          "page_count",
+          "field_mapping_manifest",
+          "manifest_sha256",
+          "bundle_sha256",
+          "signature_format_version",
+          "publisher_ed25519_sig",
+          "signing_key_id",
+          "signature_verified"
+        ],
+        "title": "TemplateBundleManifestResponse",
+        "type": "object"
+      },
+      "TemplateCategory": {
+        "description": "Stored in ``form_templates.category``.",
+        "enum": [
+          "REVENUE",
+          "IDENTITY",
+          "PENSION",
+          "TRANSPORT",
+          "WELFARE",
+          "EMPLOYMENT",
+          "RTI"
+        ],
+        "title": "TemplateCategory",
+        "type": "string"
+      },
+      "TemplateVersionStatus": {
+        "description": "Stored in ``template_versions.status`` and approval-log status columns.",
+        "enum": [
+          "DRAFT",
+          "IN_REVIEW",
+          "VERIFIED",
+          "APPROVED",
+          "PUBLISHED",
+          "DEPRECATED"
+        ],
+        "title": "TemplateVersionStatus",
+        "type": "string"
+      },
+      "TemplateVersionStatusResponse": {
+        "description": "Lifecycle of one ``slug@semver``. Always 200 \u2014 never 404-masks a withdrawal.",
+        "properties": {
+          "deprecated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecated At"
+          },
+          "deprecation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecation Reason"
+          },
+          "published_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Version Id"
+          },
+          "replaced_by_template_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By Template Slug"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "status": {
+            "enum": [
+              "PUBLISHED",
+              "DEPRECATED",
+              "NEVER_PUBLISHED",
+              "UNKNOWN_VERSION",
+              "UNKNOWN_TEMPLATE"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "slug",
+          "semver",
+          "status"
+        ],
+        "title": "TemplateVersionStatusResponse",
+        "type": "object"
+      },
+      "TokenRefreshPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "device_fingerprint_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Device Fingerprint Hash",
+            "type": "string"
+          },
+          "refresh_token": {
+            "maxLength": 512,
+            "minLength": 20,
+            "title": "Refresh Token",
+            "type": "string"
+          }
+        },
+        "required": [
+          "refresh_token",
+          "device_fingerprint_hash"
+        ],
+        "title": "TokenRefreshPayload",
+        "type": "object"
+      },
+      "UpgradeLeasePayload": {
+        "additionalProperties": false,
+        "properties": {
+          "device_fingerprint_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Device Fingerprint Hash",
+            "type": "string"
+          },
+          "draft_instance_id_hash": {
+            "pattern": "^[a-f0-9]{64}$",
+            "title": "Draft Instance Id Hash",
+            "type": "string"
+          },
+          "upgrade_sku": {
+            "const": "SIG_UPGRADE_30",
+            "title": "Upgrade Sku",
+            "type": "string"
+          }
+        },
+        "required": [
+          "upgrade_sku",
+          "draft_instance_id_hash",
+          "device_fingerprint_hash"
+        ],
+        "title": "UpgradeLeasePayload",
+        "type": "object"
+      },
+      "ValidationError": {
+        "properties": {
+          "ctx": {
+            "title": "Context",
+            "type": "object"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "title": "Location",
+            "type": "array"
+          },
+          "msg": {
+            "title": "Message",
+            "type": "string"
+          },
+          "type": {
+            "title": "Error Type",
+            "type": "string"
+          }
+        },
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError",
+        "type": "object"
+      },
+      "VerifyRazorpayPaymentPayload": {
+        "additionalProperties": false,
+        "properties": {
+          "razorpay_order_id": {
+            "maxLength": 80,
+            "minLength": 4,
+            "title": "Razorpay Order Id",
+            "type": "string"
+          },
+          "razorpay_payment_id": {
+            "maxLength": 80,
+            "minLength": 4,
+            "title": "Razorpay Payment Id",
+            "type": "string"
+          },
+          "razorpay_signature": {
+            "maxLength": 128,
+            "minLength": 16,
+            "title": "Razorpay Signature",
+            "type": "string"
+          }
+        },
+        "required": [
+          "razorpay_order_id",
+          "razorpay_payment_id",
+          "razorpay_signature"
+        ],
+        "title": "VerifyRazorpayPaymentPayload",
+        "type": "object"
+      },
+      "WalletBalanceResponse": {
+        "properties": {
+          "free_quota_available": {
+            "title": "Free Quota Available",
+            "type": "integer"
+          },
+          "free_quota_reserved": {
+            "title": "Free Quota Reserved",
+            "type": "integer"
+          },
+          "free_quota_total": {
+            "title": "Free Quota Total",
+            "type": "integer"
+          },
+          "free_quota_used": {
+            "title": "Free Quota Used",
+            "type": "integer"
+          },
+          "ledger_sequence_no": {
+            "title": "Ledger Sequence No",
+            "type": "integer"
+          },
+          "paid_sig_50_available": {
+            "title": "Paid Sig 50 Available",
+            "type": "integer"
+          },
+          "paid_sig_50_reserved": {
+            "title": "Paid Sig 50 Reserved",
+            "type": "integer"
+          },
+          "paid_std_20_available": {
+            "title": "Paid Std 20 Available",
+            "type": "integer"
+          },
+          "paid_std_20_reserved": {
+            "title": "Paid Std 20 Reserved",
+            "type": "integer"
+          },
+          "paid_upgrade_30_available": {
+            "title": "Paid Upgrade 30 Available",
+            "type": "integer"
+          },
+          "paid_upgrade_30_reserved": {
+            "title": "Paid Upgrade 30 Reserved",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "free_quota_total",
+          "free_quota_used",
+          "free_quota_reserved",
+          "free_quota_available",
+          "paid_std_20_available",
+          "paid_std_20_reserved",
+          "paid_sig_50_available",
+          "paid_sig_50_reserved",
+          "paid_upgrade_30_available",
+          "paid_upgrade_30_reserved",
+          "ledger_sequence_no"
+        ],
+        "title": "WalletBalanceResponse",
+        "type": "object"
+      },
+      "WalletSnapshot": {
+        "properties": {
+          "lifetime_free_remaining": {
+            "title": "Lifetime Free Remaining",
+            "type": "integer"
+          },
+          "paid_sig_50_available": {
+            "title": "Paid Sig 50 Available",
+            "type": "integer"
+          },
+          "paid_std_20_available": {
+            "title": "Paid Std 20 Available",
+            "type": "integer"
+          },
+          "paid_upgrade_30_available": {
+            "title": "Paid Upgrade 30 Available",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "lifetime_free_remaining",
+          "paid_std_20_available",
+          "paid_sig_50_available",
+          "paid_upgrade_30_available"
+        ],
+        "title": "WalletSnapshot",
+        "type": "object"
+      },
+      "WalletSummary": {
+        "properties": {
+          "free_quota_remaining": {
+            "title": "Free Quota Remaining",
+            "type": "integer"
+          },
+          "free_quota_total": {
+            "title": "Free Quota Total",
+            "type": "integer"
+          },
+          "free_quota_used": {
+            "title": "Free Quota Used",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "free_quota_total",
+          "free_quota_used",
+          "free_quota_remaining"
+        ],
+        "title": "WalletSummary",
+        "type": "object"
+      },
+      "WebhookAckResponse": {
+        "properties": {
+          "event_type": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Event Type"
+          },
+          "processed_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Processed At"
+          },
+          "status": {
+            "enum": [
+              "PROCESSED",
+              "ALREADY_PROCESSED",
+              "IGNORED"
+            ],
+            "title": "Status",
+            "type": "string"
+          }
+        },
+        "required": [
+          "status"
+        ],
+        "title": "WebhookAckResponse",
+        "type": "object"
+      }
+    },
+    "securitySchemes": {
+      "BearerAuth": {
+        "bearerFormat": "JWT",
+        "scheme": "bearer",
+        "type": "http"
+      }
+    }
+  },
+  "info": {
+    "title": "Indian Government Forms Automation Platform \u2014 Backend",
+    "version": "2.1.0"
+  },
+  "openapi": "3.1.0",
+  "paths": {
+    "/api/v1/admin/domains": {
+      "post": {
+        "operationId": "create_domain_api_v1_admin_domains_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateApprovedDomainPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovedDomainResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create Domain",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/sources": {
+      "post": {
+        "operationId": "create_source_api_v1_admin_sources_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateGovSourcePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentSourceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create Source",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/sources/{source_id}/checks": {
+      "post": {
+        "operationId": "record_source_check_api_v1_admin_sources__source_id__checks_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "source_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Source Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminRecordSourceCheckPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentSourceCheckResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Record Source Check",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates": {
+      "post": {
+        "operationId": "create_template_api_v1_admin_templates_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminCreateTemplatePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create Template",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions": {
+      "post": {
+        "operationId": "upload_template_version_api_v1_admin_templates__template_id__versions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_upload_template_version_api_v1_admin_templates__template_id__versions_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateVersionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Upload Template Version",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/{version_id}/transitions": {
+      "post": {
+        "operationId": "transition_version_api_v1_admin_templates__template_id__versions__version_id__transitions_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminStateTransitionPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateVersionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Transition Version",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/auth/account": {
+      "delete": {
+        "operationId": "delete_account_api_v1_auth_account_delete",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AccountDeletePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AccountDeletedReceipt"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Delete Account",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/logout": {
+      "post": {
+        "operationId": "logout_api_v1_auth_logout_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/LogoutPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Logout",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/request": {
+      "post": {
+        "operationId": "request_otp_api_v1_auth_otp_request_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpRequestPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "202": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/OtpChallengeResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Request Otp",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/otp/verify": {
+      "post": {
+        "operationId": "verify_otp_api_v1_auth_otp_verify_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/OtpVerifyPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokensResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Verify Otp",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions": {
+      "get": {
+        "operationId": "list_sessions_api_v1_auth_sessions_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActiveSessionListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "List Sessions",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/sessions/{session_id}": {
+      "delete": {
+        "operationId": "revoke_session_api_v1_auth_sessions__session_id__delete",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "session_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Session Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Revoke Session",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/auth/token/refresh": {
+      "post": {
+        "operationId": "refresh_token_api_v1_auth_token_refresh_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/TokenRefreshPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AuthTokensResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Refresh Token",
+        "tags": [
+          "auth"
+        ]
+      }
+    },
+    "/api/v1/entitlements/leases": {
+      "post": {
+        "operationId": "create_lease_api_v1_entitlements_leases_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateLeasePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseIssuedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create Lease",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/entitlements/leases/{lease_id}/commit": {
+      "post": {
+        "operationId": "commit_lease_api_v1_entitlements_leases__lease_id__commit_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lease_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lease Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CommitLeasePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseCommittedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Commit Lease",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/entitlements/leases/{lease_id}/release": {
+      "post": {
+        "operationId": "release_lease_api_v1_entitlements_leases__lease_id__release_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lease_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lease Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ReleaseLeasePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseReleasedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Release Lease",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/entitlements/leases/{lease_id}/upgrade": {
+      "post": {
+        "operationId": "upgrade_lease_api_v1_entitlements_leases__lease_id__upgrade_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "lease_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Lease Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpgradeLeasePayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/LeaseIssuedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Upgrade Lease",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/entitlements/public-keys": {
+      "get": {
+        "operationId": "get_public_keys_api_v1_entitlements_public_keys_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublicKeySetResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Public Keys",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/entitlements/wallet": {
+      "get": {
+        "operationId": "get_wallet_api_v1_entitlements_wallet_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WalletBalanceResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get Wallet",
+        "tags": [
+          "entitlements"
+        ]
+      }
+    },
+    "/api/v1/esign/sessions": {
+      "post": {
+        "description": "Start a hash-only eSign session (Milestone 7).",
+        "operationId": "create_esign_session_api_v1_esign_sessions_post",
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": true,
+                  "title": "Response Create Esign Session Api V1 Esign Sessions Post",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Create Esign Session",
+        "tags": [
+          "esign"
+        ]
+      }
+    },
+    "/api/v1/health/live": {
+      "get": {
+        "operationId": "health_live_api_v1_health_live_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Live Api V1 Health Live Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Live",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/api/v1/health/ready": {
+      "get": {
+        "operationId": "health_ready_api_v1_health_ready_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Ready Api V1 Health Ready Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health Ready",
+        "tags": [
+          "ops"
+        ]
+      }
+    },
+    "/api/v1/payments/orders": {
+      "post": {
+        "operationId": "create_order_api_v1_payments_orders_post",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreatePaymentOrderPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentOrderCreatedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Create Order",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/orders/{order_id}/verify": {
+      "post": {
+        "operationId": "verify_payment_api_v1_payments_orders__order_id__verify_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "order_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Order Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/VerifyRazorpayPaymentPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PaymentVerifiedResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Verify Payment",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/pricing": {
+      "get": {
+        "operationId": "get_pricing_api_v1_payments_pricing_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PricingCatalogResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Get Pricing",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/payments/webhooks/razorpay": {
+      "post": {
+        "operationId": "razorpay_webhook_api_v1_payments_webhooks_razorpay_post",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/WebhookAckResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Razorpay Webhook",
+        "tags": [
+          "payments"
+        ]
+      }
+    },
+    "/api/v1/templates": {
+      "get": {
+        "operationId": "list_templates_api_v1_templates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "jurisdiction",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Jurisdiction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TemplateCategory"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "search_code",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 64,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Search Code"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedTemplateListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Templates",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/publisher-keys": {
+      "get": {
+        "description": "Template-publisher verification keys (distinct from the ELT key set).",
+        "operationId": "list_publisher_keys_api_v1_templates_publisher_keys_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublisherKeySetResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "List Publisher Keys",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/sources": {
+      "get": {
+        "operationId": "list_sources_api_v1_templates_sources_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "jurisdiction",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Jurisdiction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GovernmentSourceListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "List Sources",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{slug}": {
+      "get": {
+        "operationId": "get_template_api_v1_templates__slug__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/PublishedTemplateDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Template",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{slug}/versions/{semver}/bundle": {
+      "get": {
+        "operationId": "get_template_bundle_api_v1_templates__slug__versions__semver__bundle_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "semver",
+            "required": true,
+            "schema": {
+              "title": "Semver",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateBundleManifestResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Get Template Bundle",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/api/v1/templates/{slug}/versions/{semver}/status": {
+      "get": {
+        "operationId": "get_template_version_status_api_v1_templates__slug__versions__semver__status_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "slug",
+            "required": true,
+            "schema": {
+              "maxLength": 80,
+              "title": "Slug",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "semver",
+            "required": true,
+            "schema": {
+              "maxLength": 20,
+              "title": "Semver",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/TemplateVersionStatusResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "summary": "Get Template Version Status",
+        "tags": [
+          "templates"
+        ]
+      }
+    },
+    "/health": {
+      "get": {
+        "operationId": "health_health_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "title": "Response Health Health Get",
+                  "type": "object"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "summary": "Health",
+        "tags": [
+          "ops"
+        ]
+      }
+    }
+  }
+}

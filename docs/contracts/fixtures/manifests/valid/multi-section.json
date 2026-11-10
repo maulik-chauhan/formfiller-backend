@@ -1,0 +1,102 @@
+{
+  "schema_version": 1,
+  "kind": "govforms.form-manifest",
+  "identity": {
+    "slug": "test-multi-section",
+    "jurisdiction": "CENTRAL_INDIA",
+    "category": "WELFARE",
+    "official_form_code": "TEST-FIXTURE-002",
+    "semver": "1.0.0",
+    "page_count": 2,
+    "blank_pdf_sha256": "2f193405d62820952d2c372e505b6204a93f2194ebe7f0c5609758eae0ceabc2"
+  },
+  "sections": [
+    {
+      "id": "person",
+      "title": "Person",
+      "description": "Who is filling in this test form.",
+      "fields": [
+        {
+          "id": "full_name",
+          "type": "text",
+          "label": "Full name",
+          "required": true,
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 76,
+              "y": 723,
+              "width": 292,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 11,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "place",
+      "title": "Place",
+      "fields": [
+        {
+          "id": "pincode",
+          "type": "text",
+          "label": "PIN code",
+          "help": "Six digits.",
+          "required": true,
+          "validation": {
+            "pattern": "pincode_in"
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 76,
+              "y": 463,
+              "width": 92,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 11,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "notes",
+      "title": "Notes",
+      "fields": [
+        {
+          "id": "notes",
+          "type": "multiline",
+          "label": "Notes",
+          "required": false,
+          "validation": {
+            "max_length": 600
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 1,
+              "x": 76,
+              "y": 626,
+              "width": 392,
+              "height": 108,
+              "font": "Helvetica",
+              "size": 11,
+              "align": "left",
+              "multiline": true,
+              "line_height": 14
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

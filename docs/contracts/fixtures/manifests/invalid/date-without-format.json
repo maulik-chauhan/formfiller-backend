@@ -1,0 +1,74 @@
+{
+  "description": "A date printed as text must declare its format.",
+  "expect_code": "mapping_not_applicable",
+  "manifest": {
+    "schema_version": 1,
+    "kind": "govforms.form-manifest",
+    "identity": {
+      "slug": "test-date-number",
+      "jurisdiction": "CENTRAL_INDIA",
+      "category": "WELFARE",
+      "official_form_code": "TEST-FIXTURE-005",
+      "semver": "1.0.0",
+      "page_count": 2,
+      "blank_pdf_sha256": "2f193405d62820952d2c372e505b6204a93f2194ebe7f0c5609758eae0ceabc2"
+    },
+    "sections": [
+      {
+        "id": "main",
+        "title": "Date and count",
+        "fields": [
+          {
+            "id": "event_date",
+            "type": "date",
+            "label": "Date",
+            "required": true,
+            "validation": {
+              "min_date": "2000-01-01",
+              "not_future": true
+            },
+            "pdf": [
+              {
+                "type": "text_at",
+                "page": 0,
+                "x": 76,
+                "y": 677,
+                "width": 132,
+                "height": 14,
+                "font": "Helvetica",
+                "size": 11,
+                "align": "left",
+                "multiline": false
+              }
+            ]
+          },
+          {
+            "id": "count",
+            "type": "number",
+            "label": "Count",
+            "required": true,
+            "default": 1,
+            "validation": {
+              "min": 1,
+              "max": 20
+            },
+            "pdf": [
+              {
+                "type": "text_at",
+                "page": 0,
+                "x": 244,
+                "y": 677,
+                "width": 72,
+                "height": 14,
+                "font": "Helvetica",
+                "size": 11,
+                "align": "right",
+                "multiline": false
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

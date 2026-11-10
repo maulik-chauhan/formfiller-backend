@@ -1,0 +1,685 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://govforms.invalid/contracts/form-manifest-v1.schema.json",
+  "title": "Form manifest v1",
+  "description": "Structural shape of a form manifest. Cross-reference and compatibility rules (unique ids, option references, type/mapping compatibility, PDF binding) are specified in form-manifest-v1.md and enforced by both validators; a document can satisfy this schema and still be rejected.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "kind",
+    "identity",
+    "sections"
+  ],
+  "properties": {
+    "schema_version": {
+      "const": 1
+    },
+    "kind": {
+      "const": "govforms.form-manifest"
+    },
+    "identity": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "slug",
+        "jurisdiction",
+        "category",
+        "official_form_code",
+        "semver",
+        "page_count",
+        "blank_pdf_sha256"
+      ],
+      "properties": {
+        "slug": {
+          "type": "string",
+          "pattern": "^[a-z0-9]+(-[a-z0-9]+)*$",
+          "maxLength": 80
+        },
+        "jurisdiction": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "category": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "official_form_code": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 64
+        },
+        "semver": {
+          "type": "string",
+          "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)$"
+        },
+        "page_count": {
+          "type": "integer",
+          "minimum": 1
+        },
+        "blank_pdf_sha256": {
+          "type": "string",
+          "pattern": "^[a-f0-9]{64}$"
+        }
+      }
+    },
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 50,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "id",
+          "title",
+          "fields"
+        ],
+        "properties": {
+          "id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{0,63}$"
+          },
+          "title": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 200
+          },
+          "description": {
+            "type": "string",
+            "minLength": 1,
+            "maxLength": 1000
+          },
+          "fields": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 200,
+            "items": {
+              "$ref": "#/$defs/field"
+            }
+          }
+        }
+      }
+    },
+    "rules": {
+      "type": "array",
+      "maxItems": 50,
+      "items": {
+        "$ref": "#/$defs/rule"
+      }
+    }
+  },
+  "$defs": {
+    "condition": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op",
+            "value"
+          ],
+          "properties": {
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "op": {
+              "enum": [
+                "equals",
+                "not_equals"
+              ]
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op",
+            "values"
+          ],
+          "properties": {
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "op": {
+              "const": "in"
+            },
+            "values": {
+              "type": "array",
+              "minItems": 1,
+              "uniqueItems": true,
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "field",
+            "op"
+          ],
+          "properties": {
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "op": {
+              "enum": [
+                "is_checked",
+                "is_not_checked"
+              ]
+            }
+          }
+        }
+      ]
+    },
+    "mapping": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "field_name"
+          ],
+          "properties": {
+            "type": {
+              "const": "acro_text"
+            },
+            "field_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "source": {
+              "enum": [
+                "line1",
+                "line2",
+                "city",
+                "district",
+                "state",
+                "pincode",
+                "full"
+              ]
+            },
+            "date_format": {
+              "enum": [
+                "DD/MM/YYYY",
+                "DD-MM-YYYY",
+                "DD.MM.YYYY",
+                "YYYY-MM-DD"
+              ]
+            },
+            "option_text": {
+              "enum": [
+                "label",
+                "value"
+              ]
+            },
+            "transform": {
+              "enum": [
+                "none",
+                "uppercase"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "page",
+            "x",
+            "y",
+            "width",
+            "height",
+            "font",
+            "size",
+            "align",
+            "multiline"
+          ],
+          "properties": {
+            "type": {
+              "const": "text_at"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "width": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20000
+            },
+            "height": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 20000
+            },
+            "font": {
+              "enum": [
+                "Helvetica",
+                "Helvetica-Bold",
+                "Times-Roman",
+                "Courier"
+              ]
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 72
+            },
+            "align": {
+              "enum": [
+                "left",
+                "center",
+                "right"
+              ]
+            },
+            "multiline": {
+              "type": "boolean"
+            },
+            "line_height": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 200
+            },
+            "source": {
+              "enum": [
+                "line1",
+                "line2",
+                "city",
+                "district",
+                "state",
+                "pincode",
+                "full"
+              ]
+            },
+            "date_format": {
+              "enum": [
+                "DD/MM/YYYY",
+                "DD-MM-YYYY",
+                "DD.MM.YYYY",
+                "YYYY-MM-DD"
+              ]
+            },
+            "option_text": {
+              "enum": [
+                "label",
+                "value"
+              ]
+            },
+            "transform": {
+              "enum": [
+                "none",
+                "uppercase"
+              ]
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "field_name"
+          ],
+          "properties": {
+            "type": {
+              "const": "acro_checkbox"
+            },
+            "field_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "on_value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "page",
+            "x",
+            "y",
+            "size",
+            "mark"
+          ],
+          "properties": {
+            "type": {
+              "const": "mark_at"
+            },
+            "page": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "x": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "y": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 20000
+            },
+            "size": {
+              "type": "integer",
+              "minimum": 4,
+              "maximum": 72
+            },
+            "mark": {
+              "enum": [
+                "check",
+                "cross"
+              ]
+            },
+            "on_value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "type",
+            "field_name",
+            "options"
+          ],
+          "properties": {
+            "type": {
+              "enum": [
+                "acro_radio",
+                "acro_dropdown"
+              ]
+            },
+            "field_name": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 256
+            },
+            "options": {
+              "type": "object",
+              "minProperties": 1,
+              "additionalProperties": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 64
+              }
+            }
+          }
+        }
+      ]
+    },
+    "field": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "id",
+        "type",
+        "label",
+        "required",
+        "pdf"
+      ],
+      "properties": {
+        "id": {
+          "type": "string",
+          "pattern": "^[a-z][a-z0-9_]{0,63}$"
+        },
+        "type": {
+          "enum": [
+            "text",
+            "multiline",
+            "number",
+            "date",
+            "select",
+            "radio",
+            "checkbox",
+            "address"
+          ]
+        },
+        "label": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 200
+        },
+        "help": {
+          "type": "string",
+          "minLength": 1,
+          "maxLength": 500
+        },
+        "required": {
+          "type": "boolean"
+        },
+        "default": {
+          "type": [
+            "string",
+            "integer",
+            "boolean"
+          ]
+        },
+        "options": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 200,
+          "items": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "value",
+              "label"
+            ],
+            "properties": {
+              "value": {
+                "type": "string",
+                "pattern": "^[A-Za-z0-9_.-]{1,64}$"
+              },
+              "label": {
+                "type": "string",
+                "minLength": 1,
+                "maxLength": 200
+              }
+            }
+          }
+        },
+        "validation": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [],
+          "properties": {
+            "min_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "max_length": {
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 5000
+            },
+            "pattern": {
+              "enum": [
+                "digits",
+                "alpha_space",
+                "alphanumeric",
+                "pincode_in",
+                "mobile_in",
+                "email"
+              ]
+            },
+            "min": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "max": {
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            },
+            "min_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "max_date": {
+              "type": "string",
+              "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+            },
+            "not_future": {
+              "type": "boolean"
+            },
+            "not_past": {
+              "type": "boolean"
+            }
+          }
+        },
+        "visible_when": {
+          "$ref": "#/$defs/condition"
+        },
+        "profile_key": {
+          "type": "string",
+          "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+        },
+        "profile_keys": {
+          "type": "object",
+          "minProperties": 1,
+          "additionalProperties": false,
+          "properties": {
+            "line1": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            },
+            "line2": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            },
+            "city": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            },
+            "district": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            },
+            "state": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            },
+            "pincode": {
+              "type": "string",
+              "pattern": "^[a-z0-9][a-z0-9_]{0,63}$"
+            }
+          }
+        },
+        "pdf": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 20,
+          "items": {
+            "$ref": "#/$defs/mapping"
+          }
+        }
+      }
+    },
+    "rule": {
+      "oneOf": [
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "field",
+            "other_field",
+            "message"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "type": {
+              "const": "date_not_before"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "other_field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          }
+        },
+        {
+          "type": "object",
+          "additionalProperties": false,
+          "required": [
+            "id",
+            "type",
+            "field",
+            "when",
+            "message"
+          ],
+          "properties": {
+            "id": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "type": {
+              "const": "required_if"
+            },
+            "field": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{0,63}$"
+            },
+            "when": {
+              "$ref": "#/$defs/condition"
+            },
+            "message": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 300
+            }
+          }
+        }
+      ]
+    }
+  }
+}

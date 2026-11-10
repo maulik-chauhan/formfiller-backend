@@ -1,0 +1,146 @@
+{
+  "description": "visible_when may only reference a field defined earlier (no cycles).",
+  "expect_code": "condition_invalid",
+  "manifest": {
+    "schema_version": 1,
+    "kind": "govforms.form-manifest",
+    "identity": {
+      "slug": "test-conditional",
+      "jurisdiction": "CENTRAL_INDIA",
+      "category": "WELFARE",
+      "official_form_code": "TEST-FIXTURE-006",
+      "semver": "1.0.0",
+      "page_count": 2,
+      "blank_pdf_sha256": "2f193405d62820952d2c372e505b6204a93f2194ebe7f0c5609758eae0ceabc2"
+    },
+    "sections": [
+      {
+        "id": "main",
+        "title": "Delivery",
+        "fields": [
+          {
+            "id": "delivery",
+            "type": "radio",
+            "label": "Delivery",
+            "required": true,
+            "options": [
+              {
+                "value": "collect",
+                "label": "Collect in person"
+              },
+              {
+                "value": "post",
+                "label": "Send by post"
+              }
+            ],
+            "pdf": [
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 73,
+                "y": 631,
+                "size": 10,
+                "mark": "cross",
+                "on_value": "collect"
+              },
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 163,
+                "y": 631,
+                "size": 10,
+                "mark": "cross",
+                "on_value": "post"
+              }
+            ],
+            "visible_when": {
+              "field": "urgent",
+              "op": "is_checked"
+            }
+          },
+          {
+            "id": "postal_pincode",
+            "type": "text",
+            "label": "PIN code for postal delivery",
+            "required": true,
+            "validation": {
+              "pattern": "pincode_in"
+            },
+            "visible_when": {
+              "field": "delivery",
+              "op": "equals",
+              "value": "post"
+            },
+            "pdf": [
+              {
+                "type": "text_at",
+                "page": 0,
+                "x": 76,
+                "y": 463,
+                "width": 92,
+                "height": 14,
+                "font": "Helvetica",
+                "size": 11,
+                "align": "left",
+                "multiline": false
+              }
+            ]
+          },
+          {
+            "id": "urgent",
+            "type": "checkbox",
+            "label": "Urgent",
+            "required": false,
+            "pdf": [
+              {
+                "type": "mark_at",
+                "page": 0,
+                "x": 73,
+                "y": 607,
+                "size": 10,
+                "mark": "check"
+              }
+            ]
+          },
+          {
+            "id": "reason",
+            "type": "multiline",
+            "label": "Reason for urgency",
+            "required": false,
+            "visible_when": {
+              "field": "urgent",
+              "op": "is_checked"
+            },
+            "pdf": [
+              {
+                "type": "text_at",
+                "page": 1,
+                "x": 76,
+                "y": 626,
+                "width": 392,
+                "height": 108,
+                "font": "Helvetica",
+                "size": 11,
+                "align": "left",
+                "multiline": true,
+                "line_height": 14
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "rules": [
+      {
+        "id": "urgent_needs_reason",
+        "type": "required_if",
+        "field": "reason",
+        "when": {
+          "field": "urgent",
+          "op": "is_checked"
+        },
+        "message": "Give a reason when the request is urgent."
+      }
+    ]
+  }
+}
