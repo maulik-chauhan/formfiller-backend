@@ -124,6 +124,14 @@ class TemplateVersion(Base):
     bundle_sha256: Mapped[str] = mapped_column(CHAR(64), nullable=False)
     publisher_ed25519_sig: Mapped[str | None] = mapped_column(String(256))
     signing_key_id: Mapped[str | None] = mapped_column(String(32))
+    # 1 = legacy pipe-joined digest, 2 = domain-separated length-prefixed digest.
+    # ``bundle_sha256`` is the digest in this format; frozen once PUBLISHED.
+    signature_format_version: Mapped[int] = mapped_column(
+        SmallInteger, nullable=False, server_default=text("1")
+    )
+    # Withdrawal provenance, written once on PUBLISHED -> DEPRECATED.
+    deprecation_reason: Mapped[str | None] = mapped_column(String(200))
+    replaced_by_template_slug: Mapped[str | None] = mapped_column(String(80))
     created_by_admin_id: Mapped[uuid.UUID] = mapped_column(
         UUID(as_uuid=True), ForeignKey("users.id", ondelete="RESTRICT"), nullable=False
     )

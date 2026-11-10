@@ -53,6 +53,16 @@ os.environ.update(
         # quota/restoration logic can be exercised. Production leaves it unset.
         "DEFAULT_FREE_QUOTA_TOTAL": "2",
         "OTP_DELIVERY_PROVIDER": "mock",
+        # Hermetic: never inherit a developer's local backend/.env.
+        "DEBUG": "false",
+        "TEMPLATE_SIGNING_KEY_ID": "ed25519-template-2026-v1",
+        "TEMPLATE_SIGNING_PREV_SEED_B64": "",
+        "TEMPLATE_SIGNING_PREV_KEY_ID": "",
+        "TEMPLATE_STORAGE_PROVIDER": "local",
+        "TEMPLATE_CDN_BASE_URL": "https://cdn.govforms.in",
+        "CORS_ALLOWED_ORIGINS": "",
+        "LEASE_SIGNING_PREV_SEED_B64": "",
+        "LEASE_SIGNING_PREV_KEY_ID": "",
     }
 )
 

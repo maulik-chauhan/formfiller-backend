@@ -9,6 +9,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.constants import UserRole
+from tests.manifest_fixtures import contract_manifest
 from tests.pdf_fixtures import make_blank_pdf
 
 pytestmark = pytest.mark.asyncio
@@ -66,14 +67,16 @@ async def _create_template(
 async def _upload_version(
     client: AsyncClient, token: str, template_id: str, source_id: str, semver: str = "1.0.0"
 ) -> dict[str, Any]:
-    files = {"blank_pdf": ("blank.pdf", make_blank_pdf(2), "application/pdf")}
+    pdf = make_blank_pdf(2)
+    files = {"blank_pdf": ("blank.pdf", pdf, "application/pdf")}
     data = {
         "semver": semver,
         "source_pdf_download_url": "https://rural.gov.in/forms/ror.pdf",
         "source_url_matched_domain": "gov.in",
         "source_downloaded_at": "2026-11-01T00:00:00+00:00",
         "government_source_id": source_id,
-        "manifest_json": json.dumps({"fields": [{"name": "applicant", "page": 1}]}),
+        # Contract-valid manifest (form-manifest v1); pre-contract shapes are rejected.
+        "manifest_json": json.dumps(contract_manifest(pdf, semver=semver)),
     }
     r = await client.post(
         f"/api/v1/admin/templates/{template_id}/versions",
@@ -263,14 +266,15 @@ async def test_duplicate_semver_rejected(client: AsyncClient, make_principal) ->
     source_id = await _create_source(client, curator)
     template_id = await _create_template(client, curator, source_id)
     await _upload_version(client, curator, template_id, source_id, semver="1.0.0")
-    files = {"blank_pdf": ("blank.pdf", make_blank_pdf(1), "application/pdf")}
+    pdf = make_blank_pdf(1)
+    files = {"blank_pdf": ("blank.pdf", pdf, "application/pdf")}
     data = {
         "semver": "1.0.0",
         "source_pdf_download_url": "https://rural.gov.in/forms/ror.pdf",
         "source_url_matched_domain": "gov.in",
         "source_downloaded_at": "2026-11-01T00:00:00+00:00",
         "government_source_id": source_id,
-        "manifest_json": json.dumps({"fields": []}),
+        "manifest_json": json.dumps(contract_manifest(pdf)),
     }
     dup = await client.post(
         f"/api/v1/admin/templates/{template_id}/versions",

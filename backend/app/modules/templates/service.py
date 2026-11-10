@@ -27,9 +27,16 @@ from app.core.constants import (
 )
 from app.core.dependencies import AuthContext, RequestContext
 from app.core.errors import ConflictError, ForbiddenError, NotFoundError, ValidationFailedError
-from app.core.signing import sign_bundle, signing_key_id, verify_bundle
+from app.core.signing import (
+    CURRENT_SIGNATURE_FORMAT_VERSION,
+    sign_publisher_digest,
+    template_bundle_digest_v1,
+    template_bundle_digest_v2,
+    verify_publisher_digest,
+)
 from app.modules.audit import service as audit
 from app.modules.templates import schemas
+from app.modules.templates.manifest_contract import TemplateIdentity, assert_valid_manifest
 from app.modules.templates.models import (
     ApprovedSourceDomain,
     FormTemplate,
@@ -74,21 +81,42 @@ def _now() -> dt.datetime:
     return dt.datetime.now(tz=dt.UTC)
 
 
+def canonical_manifest_json(manifest: dict[str, object]) -> str:
+    """Canonical manifest text hashed into ``manifest_sha256``.
+
+    Keys sorted by code point, no insignificant whitespace, every non-ASCII
+    character escaped as ``\\uXXXX``. Clients reproduce exactly these bytes; the
+    cross-language vectors live in ``docs/contracts/fixtures``.
+    """
+    return json.dumps(manifest, sort_keys=True, separators=(",", ":"), ensure_ascii=True)
+
+
 def _manifest_sha256(manifest: dict[str, object]) -> str:
-    canonical = json.dumps(manifest, sort_keys=True, separators=(",", ":")).encode("utf-8")
-    return hashlib.sha256(canonical).hexdigest()
+    return hashlib.sha256(canonical_manifest_json(manifest).encode("utf-8")).hexdigest()
 
 
-def _bundle_sha256(
-    *,
-    template_id: uuid.UUID,
-    semver: str,
-    blank_pdf_sha256: str,
-    manifest_sha256: str,
-    page_count: int,
-) -> str:
-    canonical = f"{template_id}|{semver}|{blank_pdf_sha256}|{manifest_sha256}|{page_count}"
-    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
+def bundle_digest_for(template: FormTemplate, version: TemplateVersion) -> str:
+    """Recompute the signed digest of ``version`` in its own signature format."""
+    if version.signature_format_version == 2:
+        return template_bundle_digest_v2(
+            template_id=str(template.id),
+            slug=template.slug,
+            jurisdiction=str(template.jurisdiction),
+            category=str(template.category),
+            official_form_code=template.official_form_code,
+            semver=version.semver,
+            published_version_id=str(version.id),
+            blank_pdf_sha256=version.blank_pdf_sha256,
+            manifest_sha256=version.manifest_sha256,
+            page_count=version.page_count,
+        )
+    return template_bundle_digest_v1(
+        template_id=str(template.id),
+        semver=version.semver,
+        blank_pdf_sha256=version.blank_pdf_sha256,
+        manifest_sha256=version.manifest_sha256,
+        page_count=version.page_count,
+    )
 
 
 @dataclass
@@ -272,10 +300,33 @@ class TemplateAdminService:
             raise ValidationFailedError("government_source_id does not match the template")
 
         validated = validate_blank_pdf(data.pdf_bytes)
+        # The manifest must satisfy form-manifest contract v1 and describe exactly
+        # this template version and this PDF (identity, pages, real form fields).
+        assert_valid_manifest(
+            data.field_mapping_manifest,
+            expected=TemplateIdentity(
+                slug=template.slug,
+                jurisdiction=str(template.jurisdiction),
+                category=str(template.category),
+                official_form_code=template.official_form_code,
+                semver=data.semver,
+                page_count=validated.page_count,
+                blank_pdf_sha256=validated.sha256,
+            ),
+            pdf=validated.form,
+        )
         manifest_hash = _manifest_sha256(data.field_mapping_manifest)
-        bundle_hash = _bundle_sha256(
-            template_id=template_id,
+        version_id = uuid.uuid4()
+        # New versions always use the v2 digest. It binds the full identity and is
+        # the exact value every reviewer confirms and the publisher key later signs.
+        bundle_hash = template_bundle_digest_v2(
+            template_id=str(template.id),
+            slug=template.slug,
+            jurisdiction=str(template.jurisdiction),
+            category=str(template.category),
+            official_form_code=template.official_form_code,
             semver=data.semver,
+            published_version_id=str(version_id),
             blank_pdf_sha256=validated.sha256,
             manifest_sha256=manifest_hash,
             page_count=validated.page_count,
@@ -284,7 +335,8 @@ class TemplateAdminService:
         get_storage().store_blank_pdf(object_key=object_key, data=data.pdf_bytes)
 
         version = TemplateVersion(
-            id=uuid.uuid4(),
+            id=version_id,
+            signature_format_version=CURRENT_SIGNATURE_FORMAT_VERSION,
             template_id=template_id,
             semver=data.semver,
             status=S.DRAFT,
@@ -369,9 +421,20 @@ class TemplateAdminService:
             raise ForbiddenError(f"Role {auth.role} may not perform {current} -> {target}")
         if payload.expected_bundle_sha256 != version.bundle_sha256:
             raise ConflictError("expected_bundle_sha256 does not match the current bundle")
+        if target != S.DEPRECATED and (
+            payload.deprecation_reason is not None or payload.replaced_by_template_slug is not None
+        ):
+            raise ValidationFailedError(
+                "deprecation_reason / replaced_by_template_slug apply only to DEPRECATED"
+            )
 
         now = _now()
+        if target == S.PUBLISHED:
+            await self._sign_for_publication(version)
         self._apply_transition(auth, version, target, now)
+        if target == S.DEPRECATED:
+            version.deprecation_reason = payload.deprecation_reason
+            version.replaced_by_template_slug = payload.replaced_by_template_slug
         await self._update_published_pointer(version, target)
 
         self.session.add(
@@ -428,8 +491,6 @@ class TemplateAdminService:
         elif target == S.PUBLISHED:
             if version.approved_by_admin_id is None:
                 raise ConflictError("Version must be APPROVED before publication")
-            version.publisher_ed25519_sig = sign_bundle(version.bundle_sha256)
-            version.signing_key_id = signing_key_id()
             version.published_at = now
         elif target == S.DEPRECATED:
             version.deprecated_at = now
@@ -440,6 +501,26 @@ class TemplateAdminService:
             version.approved_by_admin_id = None
             version.approved_at = None
         version.status = target
+
+    async def _sign_for_publication(self, version: TemplateVersion) -> None:
+        """Sign with the active publisher key after re-deriving the digest.
+
+        The digest is recomputed from live rows rather than trusted from the stored
+        column, so a publication can never sign a value that no longer describes
+        the template (defence in depth against any out-of-band mutation).
+        """
+        if version.approved_by_admin_id is None:
+            raise ConflictError("Version must be APPROVED before publication")
+        template = await self.session.get(FormTemplate, version.template_id)
+        if template is None:
+            raise NotFoundError("Template not found")
+        if _manifest_sha256(version.field_mapping_manifest) != version.manifest_sha256:
+            raise ConflictError("Stored manifest no longer matches its recorded checksum")
+        if bundle_digest_for(template, version) != version.bundle_sha256:
+            raise ConflictError("Stored bundle digest no longer matches the template identity")
+        signature, kid = sign_publisher_digest(version.bundle_sha256)
+        version.publisher_ed25519_sig = signature
+        version.signing_key_id = kid
 
     async def _update_published_pointer(
         self, version: TemplateVersion, target: TemplateVersionStatus
@@ -587,8 +668,61 @@ class TemplateReadService:
         ).scalar_one_or_none()
         if version is None:
             raise NotFoundError("Published bundle not found")
-        verified = bool(
-            version.publisher_ed25519_sig
-            and verify_bundle(version.bundle_sha256, version.publisher_ed25519_sig)
+        return template, version, _verify_published_signature(template, version)
+
+    async def get_version_status(
+        self, slug: str, semver: str
+    ) -> schemas.TemplateVersionStatusResponse:
+        """Lifecycle of ``slug@semver`` without leaking any unpublished artifact."""
+        template = (
+            await self.session.execute(select(FormTemplate).where(FormTemplate.slug == slug))
+        ).scalar_one_or_none()
+        if template is None:
+            return schemas.TemplateVersionStatusResponse(
+                slug=slug, semver=semver, status="UNKNOWN_TEMPLATE"
+            )
+        version = (
+            await self.session.execute(
+                select(TemplateVersion).where(
+                    TemplateVersion.template_id == template.id,
+                    TemplateVersion.semver == semver,
+                )
+            )
+        ).scalar_one_or_none()
+        if version is None:
+            return schemas.TemplateVersionStatusResponse(
+                slug=slug, semver=semver, status="UNKNOWN_VERSION"
+            )
+        if version.status == S.PUBLISHED:
+            return schemas.TemplateVersionStatusResponse(
+                slug=slug, semver=semver, status="PUBLISHED", published_version_id=version.id
+            )
+        if version.status == S.DEPRECATED:
+            return schemas.TemplateVersionStatusResponse(
+                slug=slug,
+                semver=semver,
+                status="DEPRECATED",
+                published_version_id=version.id,
+                deprecated_at=version.deprecated_at,
+                deprecation_reason=version.deprecation_reason,
+                replaced_by_template_slug=version.replaced_by_template_slug,
+            )
+        # DRAFT / IN_REVIEW / VERIFIED / APPROVED: exists but was never public.
+        return schemas.TemplateVersionStatusResponse(
+            slug=slug, semver=semver, status="NEVER_PUBLISHED"
         )
-        return template, version, verified
+
+
+def _verify_published_signature(template: FormTemplate, version: TemplateVersion) -> bool:
+    """Server self-check: digest reproduces AND the stored signature verifies.
+
+    Rotation- and format-aware: the key is selected by the row's ``signing_key_id``
+    and the digest by its ``signature_format_version``. A retired key id fails.
+    """
+    if not version.publisher_ed25519_sig or not version.signing_key_id:
+        return False
+    if bundle_digest_for(template, version) != version.bundle_sha256:
+        return False
+    return verify_publisher_digest(
+        version.bundle_sha256, version.publisher_ed25519_sig, version.signing_key_id
+    )

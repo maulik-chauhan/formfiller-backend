@@ -8,7 +8,7 @@ from __future__ import annotations
 
 import datetime as dt
 import uuid
-from typing import Any
+from typing import Any, Literal
 
 from pydantic import Field
 
@@ -149,6 +149,9 @@ class AdminTemplateVersionResponse(ResponseModel):
     bundle_sha256: str
     signing_key_id: str | None
     publisher_ed25519_sig: str | None
+    signature_format_version: int
+    deprecation_reason: str | None
+    replaced_by_template_slug: str | None
     created_by_admin_id: uuid.UUID
     verified_by_admin_id: uuid.UUID | None
     approved_by_admin_id: uuid.UUID | None
@@ -160,6 +163,9 @@ class AdminStateTransitionPayload(StrictModel):
     target_status: TemplateVersionStatus
     expected_bundle_sha256: str = Field(pattern=_HEX64)
     review_notes: str = Field(min_length=1, max_length=2000)
+    # Withdrawal provenance; accepted only on PUBLISHED -> DEPRECATED.
+    deprecation_reason: str | None = Field(default=None, min_length=1, max_length=200)
+    replaced_by_template_slug: str | None = Field(default=None, max_length=80, pattern=_SLUG)
 
 
 # --------------------------------------------------------------------------- #
@@ -183,6 +189,7 @@ class PublishedTemplateListResponse(ResponseModel):
 
 
 class PublishedTemplateDetailResponse(ResponseModel):
+    template_id: uuid.UUID
     slug: str
     jurisdiction: Jurisdiction
     category: TemplateCategory
@@ -197,15 +204,61 @@ class PublishedTemplateDetailResponse(ResponseModel):
 
 
 class TemplateBundleManifestResponse(ResponseModel):
+    """Everything a client needs to verify a published template independently.
+
+    ``signature_verified`` is the *server* checking its own signature. It is not
+    client-side proof: clients must recompute the digest and verify the Ed25519
+    signature against a publisher key pinned in their own build.
+    """
+
+    template_id: uuid.UUID
     slug: str
+    jurisdiction: Jurisdiction
+    category: TemplateCategory
+    official_form_code: str
     semver: str
     template_version_id: uuid.UUID
     blank_pdf_sha256: str
     blank_pdf_download_url: str
+    blank_pdf_download_url_expires: bool
     page_count: int
     field_mapping_manifest: dict[str, Any]
     manifest_sha256: str
     bundle_sha256: str
+    signature_format_version: int
+    signature_alg: Literal["EdDSA"] = "EdDSA"
     publisher_ed25519_sig: str
     signing_key_id: str
     signature_verified: bool
+
+
+TemplateLifecycleStatus = Literal[
+    "PUBLISHED", "DEPRECATED", "NEVER_PUBLISHED", "UNKNOWN_VERSION", "UNKNOWN_TEMPLATE"
+]
+
+
+class TemplateVersionStatusResponse(ResponseModel):
+    """Lifecycle of one ``slug@semver``. Always 200 — never 404-masks a withdrawal."""
+
+    slug: str
+    semver: str
+    status: TemplateLifecycleStatus
+    published_version_id: uuid.UUID | None = None
+    deprecated_at: dt.datetime | None = None
+    deprecation_reason: str | None = None
+    replaced_by_template_slug: str | None = None
+
+
+class PublisherKeyEntry(ResponseModel):
+    kid: str
+    alg: Literal["EdDSA"] = "EdDSA"
+    crv: Literal["Ed25519"] = "Ed25519"
+    public_key_b64: str
+    status: Literal["active", "previous"]
+    purpose: Literal["template-publisher"] = "template-publisher"
+    current_signature_format_version: int
+
+
+class PublisherKeySetResponse(ResponseModel):
+    keys: list[PublisherKeyEntry]
+    trust_note: str

@@ -5,7 +5,7 @@ from __future__ import annotations
 import json
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import Jurisdiction, TemplateCategory, UserRole
@@ -17,6 +17,7 @@ from app.core.dependencies import (
     require_roles,
 )
 from app.core.errors import ValidationFailedError
+from app.core.signing import CURRENT_SIGNATURE_FORMAT_VERSION, publisher_key_set
 from app.db.session import get_session
 from app.modules.templates import schemas
 from app.modules.templates.service import (
@@ -62,6 +63,29 @@ async def list_sources(
     )
 
 
+_TRUST_NOTE = (
+    "Distribution/rotation only. Pin a trusted publisher key in the client build; "
+    "do not treat a key fetched here as a trust anchor."
+)
+
+
+@router.get("/publisher-keys", response_model=schemas.PublisherKeySetResponse)
+async def list_publisher_keys() -> schemas.PublisherKeySetResponse:
+    """Template-publisher verification keys (distinct from the ELT key set)."""
+    return schemas.PublisherKeySetResponse(
+        keys=[
+            schemas.PublisherKeyEntry(
+                kid=key.kid,
+                public_key_b64=key.public_key_b64,
+                status="active" if key.status == "active" else "previous",
+                current_signature_format_version=CURRENT_SIGNATURE_FORMAT_VERSION,
+            )
+            for key in publisher_key_set()
+        ],
+        trust_note=_TRUST_NOTE,
+    )
+
+
 @router.get("", response_model=schemas.PublishedTemplateListResponse)
 async def list_templates(
     jurisdiction: Jurisdiction | None = Query(default=None),
@@ -102,6 +126,7 @@ async def get_template(
 ) -> schemas.PublishedTemplateDetailResponse:
     template, version, source = await service.get_published_template(slug)
     return schemas.PublishedTemplateDetailResponse(
+        template_id=template.id,
         slug=template.slug,
         jurisdiction=Jurisdiction(template.jurisdiction),
         category=TemplateCategory(template.category),
@@ -117,6 +142,18 @@ async def get_template(
 
 
 @router.get(
+    "/{slug}/versions/{semver}/status",
+    response_model=schemas.TemplateVersionStatusResponse,
+)
+async def get_template_version_status(
+    slug: str = Path(max_length=80),
+    semver: str = Path(max_length=20),
+    service: TemplateReadService = Depends(_read_service),
+) -> schemas.TemplateVersionStatusResponse:
+    return await service.get_version_status(slug, semver)
+
+
+@router.get(
     "/{slug}/versions/{semver}/bundle",
     response_model=schemas.TemplateBundleManifestResponse,
 )
@@ -127,17 +164,23 @@ async def get_template_bundle(
     service: TemplateReadService = Depends(_read_service),
 ) -> schemas.TemplateBundleManifestResponse:
     template, version, verified = await service.get_published_bundle(slug, semver)
-    download_url = get_storage().build_download_url(version.blank_pdf_object_key)
+    storage = get_storage()
     return schemas.TemplateBundleManifestResponse(
+        template_id=template.id,
         slug=template.slug,
+        jurisdiction=Jurisdiction(template.jurisdiction),
+        category=TemplateCategory(template.category),
+        official_form_code=template.official_form_code,
         semver=version.semver,
         template_version_id=version.id,
         blank_pdf_sha256=version.blank_pdf_sha256,
-        blank_pdf_download_url=download_url,
+        blank_pdf_download_url=storage.build_download_url(version.blank_pdf_object_key),
+        blank_pdf_download_url_expires=storage.supports_expiring_urls,
         page_count=version.page_count,
         field_mapping_manifest=version.field_mapping_manifest,
         manifest_sha256=version.manifest_sha256,
         bundle_sha256=version.bundle_sha256,
+        signature_format_version=version.signature_format_version,
         publisher_ed25519_sig=version.publisher_ed25519_sig or "",
         signing_key_id=version.signing_key_id or "",
         signature_verified=verified,

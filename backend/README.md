@@ -2,11 +2,14 @@
 
 Zero-Knowledge Split-Trust backend (Python 3.12 · FastAPI · Pydantic v2 ·
 SQLAlchemy 2.x async · PostgreSQL 16 · Alembic), implementing architecture spec
-**v2.1.0**. This is the Milestone-1 foundation: full configuration, all canonical
-enums, all **19** ORM models, the complete DDL migration (CHECK constraints,
-validation functions, append-only / immutability triggers), the route-aware
-`PrivacyBoundaryMiddleware`, and the API surface with request/response schemas.
-Business-logic service layers are stubbed (`501`) behind a stable contract.
+**v2.1.0**. Implemented through M6 (auth, templates with maker-checker, entitlements,
+payments) plus the F3 template-verification contract (publisher key discovery and
+rotation, v2 signatures, lifecycle status, CORS) and the F4 form-manifest contract
+gate. eSign (M7) is disabled.
+
+Local setup, seeding and the full-stack walkthrough: `../docs/LOCAL_DEVELOPMENT.md`.
+Shared contract (manifest spec, JSON Schema, fixtures, OpenAPI): `../docs/contracts/`.
+Open decisions: `../docs/DECISION_REGISTER.md`.
 
 ## Layout
 
@@ -59,8 +62,10 @@ in-process timer.
 ```bash
 ruff check .
 ruff format --check .
-mypy app
-pytest
+mypy app scripts
+TEST_DATABASE_URL=postgresql+asyncpg://postgres@127.0.0.1:55432/gov_forms_test pytest
+python -m scripts.build_contract_fixtures --check
+python -m scripts.export_openapi --check
 ```
 
 ## Design guardrails baked in
@@ -73,6 +78,13 @@ pytest
   never used to grant credit or extend a correction window.
 - **Route-aware privacy boundary** — 4 KB JSON citizen cap, 10 MB authenticated
   admin multipart upload, 64 KB signed webhook.
+- **Form-manifest contract v1** — an uploaded manifest must validate against
+  `docs/contracts/form-manifest-v1.md`, match the template identity, and map only to
+  fields/pages that exist in the uploaded PDF; published manifests are immutable.
+- **Publisher signatures v2** — domain-separated, length-prefixed digest binding the
+  full template identity; legacy v1 rows still verify; key rotation by `kid`.
+- **Pinned API surface** — `tests/security/test_privacy_surface.py` fails if a route,
+  upload path or column that could hold applicant data is added.
 - **Commercial parameters are provisional/configurable** — free quota and the
   ₹20/₹50/₹30 tiers live in `pricing_catalog` + env `Settings`, never in
   `constants.py`.

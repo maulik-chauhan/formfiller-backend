@@ -8,6 +8,7 @@ import pytest
 from httpx import AsyncClient
 
 from app.core.constants import UserRole
+from tests.manifest_fixtures import contract_manifest
 from tests.pdf_fixtures import make_blank_pdf, make_pdf_with_token, make_prefilled_acroform_pdf
 
 pytestmark = pytest.mark.asyncio
@@ -60,6 +61,18 @@ async def _domain_source_template(client: AsyncClient, make_principal):  # type:
     return curator, source_id, tpl.json()["id"]
 
 
+def _manifest_for(pdf: bytes) -> dict:
+    """Contract-valid manifest when ``pdf`` is parseable; else a placeholder.
+
+    Tests that upload deliberately malformed bytes must be rejected by the PDF
+    validator, which runs before manifest validation.
+    """
+    try:
+        return contract_manifest(pdf)
+    except Exception:
+        return {"schema_version": 1}
+
+
 def _version_form(source_id: str, pdf: bytes) -> tuple[dict, dict]:
     files = {"blank_pdf": ("blank.pdf", pdf, "application/pdf")}
     data = {
@@ -68,7 +81,7 @@ def _version_form(source_id: str, pdf: bytes) -> tuple[dict, dict]:
         "source_url_matched_domain": "gov.in",
         "source_downloaded_at": "2026-11-01T00:00:00+00:00",
         "government_source_id": source_id,
-        "manifest_json": json.dumps({"fields": []}),
+        "manifest_json": json.dumps(_manifest_for(pdf)),
     }
     return files, data
 

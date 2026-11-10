@@ -68,10 +68,26 @@ class Settings(BaseSettings):
     # dev key per process. Kept distinct from the access-token key.
     template_signing_ed25519_seed_b64: str = Field(default="")
     template_signing_key_id: str = Field(default="ed25519-template-2026-v1")
+    # Previous publisher key (rotation): keeps already-published signatures
+    # verifiable. Set BOTH or neither. Remove it to retire/revoke the old key.
+    template_signing_prev_seed_b64: str = Field(default="")
+    template_signing_prev_key_id: str = Field(default="")
 
     # ----- Template blank-PDF storage ------------------------------------
+    # Provider-neutral port (see app/modules/templates/storage.py):
+    #   "local"       filesystem + static CDN base URL, non-expiring URLs
+    #   "mock_signed" filesystem + HMAC-signed expiring URLs (tests only)
+    # A production object-store/CDN adapter is pending DEC-3.
+    template_storage_provider: str = Field(default="local")
     template_storage_dir: str = Field(default="/tmp/govforms_templates")
     template_cdn_base_url: str = Field(default="https://cdn.govforms.in")
+    template_download_url_ttl_seconds: int = 900
+    template_mock_url_signing_key: str = Field(default="dev-mock-url-signing-key")
+
+    # ----- CORS -----------------------------------------------------------
+    # Comma-separated exact origins (scheme://host[:port]). Empty => no CORS
+    # headers at all. Credentials are never allowed (bearer-token model).
+    cors_allowed_origins: str = Field(default="")
 
     # ----- OTP ------------------------------------------------------------
     otp_ttl_seconds: int = 300
@@ -144,6 +160,15 @@ class Settings(BaseSettings):
         return self.environment in {"production", "prod"}
 
     @property
+    def is_shared_environment(self) -> bool:
+        """Production or staging: long-lived, multi-instance, real clients."""
+        return self.environment in {"production", "prod", "staging", "stage"}
+
+    @property
+    def cors_allowed_origins_list(self) -> list[str]:
+        return [o.strip().rstrip("/") for o in self.cors_allowed_origins.split(",") if o.strip()]
+
+    @property
     def resolved_free_quota_total(self) -> int:
         """Free quota to grant a new wallet.
 
@@ -154,13 +179,17 @@ class Settings(BaseSettings):
         return self.default_free_quota_total or 0
 
     def validate_production_secrets(self) -> None:
-        """Fail fast at startup if production is missing mandatory secrets.
+        """Fail fast at startup if a shared environment is missing mandatory secrets.
 
-        Blind-index, OTP, IP-subnet and access-token signing keys must each be
-        set to a real, non-default value in production, and the three key classes
-        must be distinct so compromise of one does not expose the others.
+        In production **and staging**: the blind-index, OTP and IP-subnet HMAC keys
+        and all three Ed25519 seeds (access-token, entitlement-lease, template
+        publisher) must be set to real values, every seed must decode to 32 bytes,
+        and all six secrets must be mutually distinct so compromise of one does not
+        expose another. A stable seed is mandatory: a per-process ephemeral key
+        would invalidate every token/lease/template signature on restart and
+        differ between instances. Production additionally rejects a CORS wildcard.
         """
-        if not self.is_production:
+        if not self.is_shared_environment:
             return
         defaults = {
             "blind_index_hmac_key": "dev-blind-index-key-change-me",
@@ -168,18 +197,48 @@ class Settings(BaseSettings):
             "ip_subnet_hash_key": "dev-ip-subnet-hash-key-change-me",
         }
         missing = [name for name, dev in defaults.items() if getattr(self, name) in {"", dev}]
-        if not self.access_jwt_ed25519_seed_b64:
-            missing.append("access_jwt_ed25519_seed_b64")
+        seeds = {
+            "access_jwt_ed25519_seed_b64": self.access_jwt_ed25519_seed_b64,
+            "lease_signing_seed_b64": self.lease_signing_seed_b64,
+            "template_signing_ed25519_seed_b64": self.template_signing_ed25519_seed_b64,
+        }
+        missing.extend(name for name, value in seeds.items() if not value)
         if missing:
             raise RuntimeError(f"Missing/insecure production secrets: {', '.join(sorted(missing))}")
+        import base64
+
+        for name, value in seeds.items():
+            try:
+                decoded = base64.b64decode(value, validate=True)
+            except ValueError as exc:
+                raise RuntimeError(f"{name} must be valid base64") from exc
+            if len(decoded) != 32:
+                raise RuntimeError(f"{name} must decode to exactly 32 bytes")
         key_classes = {
             self.blind_index_hmac_key,
             self.otp_hmac_key,
             self.ip_subnet_hash_key,
-            self.access_jwt_ed25519_seed_b64,
+            *seeds.values(),
         }
-        if len(key_classes) < 4:
-            raise RuntimeError("Blind-index, OTP, IP-subnet and JWT keys must all be distinct")
+        if len(key_classes) < 6:
+            raise RuntimeError(
+                "Blind-index, OTP, IP-subnet keys and the access-token, lease and "
+                "template-publisher seeds must all be distinct"
+            )
+        if self.template_signing_prev_seed_b64 and (
+            self.template_signing_prev_seed_b64 in key_classes
+        ):
+            raise RuntimeError("Previous publisher seed must differ from every active secret")
+        if self.is_production:
+            origins = self.cors_allowed_origins_list
+            if any("*" in origin for origin in origins):
+                raise RuntimeError("CORS_ALLOWED_ORIGINS must not contain a wildcard in production")
+            if any(not origin.startswith("https://") for origin in origins):
+                raise RuntimeError("CORS_ALLOWED_ORIGINS must be https:// origins in production")
+            if self.template_storage_provider != "local":
+                raise RuntimeError(
+                    "TEMPLATE_STORAGE_PROVIDER must be a production adapter (mock is test-only)"
+                )
 
 
 @lru_cache(maxsize=1)

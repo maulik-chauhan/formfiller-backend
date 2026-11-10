@@ -257,5 +257,36 @@ PostgreSQL concurrency with separate sessions and ledger-chain verification).
   webhooks; a separate admin-initiated refund-initiation endpoint is out of M6
   scope (the `initiate_refund` provider method is ready for it).
 
+## F3/F4 integration work (2026-11-11) ✅ code, external decisions open
+
+The F3 remediation described in earlier hand-off documents was **not present in this
+repository**; it has now been implemented and tested here, together with the F4
+manifest contract.
+
+- **Signing** (`app/core/signing.py`): v1 + v2 digests, active/previous publisher keys,
+  verification by stored `kid`; matches the documented cross-language vectors.
+- **Migration 0003**: `signature_format_version`, `deprecation_reason`,
+  `replaced_by_template_slug`; immutability trigger extended. Up/down verified on PG 16.
+- **API**: `GET /templates/publisher-keys`, `GET /templates/{slug}/versions/{semver}/status`;
+  bundle and detail carry the full signed identity; OpenAPI declares `BearerAuth`.
+- **CORS**: explicit origins, no credentials, outermost middleware.
+- **Config**: staging + production require three distinct 32-byte seeds; production
+  rejects CORS wildcards/http origins and the test storage adapter.
+- **Storage port**: expiring-URL capability + test adapter; production adapter pending DEC-3.
+- **Form-manifest contract v1** (`app/modules/templates/manifest_contract.py`): enforced
+  at upload against the template identity and the real PDF (fields, kinds, options,
+  pages). `docs/contracts/` holds the spec, JSON Schema, fixtures and OpenAPI export.
+- **PDF validator**: nested pre-filled values are now rejected; an unchecked box
+  (`/V /Off`) is correctly treated as blank; form/page shapes are extracted.
+- **Dev tooling** (`scripts/`): `make_dev_env`, `seed_dev`, `dev_cdn`,
+  `build_contract_fixtures`, `export_openapi`, `sync_contracts`.
+- **Tests**: 162 → 258 (2 intentional skips). Three existing template tests had their
+  upload payloads migrated from pre-contract manifests to contract-valid ones; their
+  assertions are unchanged.
+
+Behaviour change to note: uploads with a manifest outside contract v1 are rejected
+(422 `MANIFEST_VALIDATION_FAILED`). Pre-existing published rows are untouched and
+still served, but clients will not fill them.
+
 ## Milestone 7 — Not started
 Out of scope. eSign remains disabled (`503`) and eSign SKUs stay gated until M7 sign-off.
