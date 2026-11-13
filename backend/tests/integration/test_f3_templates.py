@@ -237,6 +237,22 @@ async def test_status_lifecycle_and_withdrawal_provenance(
     assert published["published_version_id"] == version["id"]
     assert (await status(v="2.0.0"))["status"] == "UNKNOWN_VERSION"
 
+    # F5: a named replacement must be a real template, so register it first.
+    replacement = await client.post(
+        "/api/v1/admin/templates",
+        json={
+            "government_source_id": source_id,
+            "slug": "test-newer-form",
+            "jurisdiction": FILLABLE["identity"]["jurisdiction"],
+            "official_form_code": "TEST-NEWER",
+            "category": FILLABLE["identity"]["category"],
+            "localized_titles": {"en": "[TEST FIXTURE] Newer form"},
+            "localized_descriptions": {"en": "Fictional test template."},
+        },
+        headers=auth(roles["curator"]),
+    )
+    assert replacement.status_code == 201, replacement.text
+
     withdrawn = await client.post(
         f"/api/v1/admin/templates/{template_id}/versions/{version['id']}/transitions",
         json={

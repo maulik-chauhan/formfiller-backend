@@ -39,6 +39,10 @@ ALLOWED_AUDIT_METADATA_KEYS: frozenset[str] = frozenset(
         "to_status",
         "target_status",
         "check_result",
+        # Admin console (F5) — field names and identifiers only, never values.
+        "changed_fields",
+        "superseded_by_version_id",
+        "role",
         # Entitlements (M5) — identifiers, buckets and tiers only (no PII).
         "template_version_id",
         "credit_bucket",

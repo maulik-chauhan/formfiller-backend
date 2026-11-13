@@ -56,6 +56,9 @@ class AuthTokensResponse(ResponseModel):
     token_type: Literal["Bearer"] = "Bearer"
     expires_in_sec: int
     user_id: uuid.UUID
+    #: The account's own role, so the client can show the admin console entry.
+    #: Display only — every admin route re-checks the role server-side.
+    role: UserRole
     wallet_summary: WalletSummary
 
 

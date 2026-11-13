@@ -25,6 +25,9 @@ class ProblemDetail(BaseModel):
     detail: str | None = None
     code: str | None = None
     instance: str | None = None
+    #: Optional machine-readable detail, e.g. ``[{field, code, message}]`` for a
+    #: rejected template manifest. Never carries submitted values.
+    errors: list[dict[str, str]] | None = None
 
 
 class AppError(Exception):

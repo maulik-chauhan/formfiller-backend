@@ -7,6 +7,7 @@ import uuid
 from fastapi import APIRouter, Depends, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.constants import UserRole
 from app.core.dependencies import (
     AuthContext,
     RequestContext,
@@ -39,6 +40,7 @@ def _tokens_response(service: AuthService, issued: IssuedAuth) -> schemas.AuthTo
         refresh_token=issued.refresh_token,
         expires_in_sec=service.settings.access_token_ttl_minutes * 60,
         user_id=issued.user.id,
+        role=UserRole(issued.user.role),
         wallet_summary=schemas.WalletSummary(
             free_quota_total=wallet.free_quota_total,
             free_quota_used=wallet.free_quota_used,

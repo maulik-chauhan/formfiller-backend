@@ -37,6 +37,17 @@ EXPECTED_ROUTES = {
     ("POST", "/api/v1/admin/templates"),
     ("POST", "/api/v1/admin/templates/{template_id}/versions"),
     ("POST", "/api/v1/admin/templates/{template_id}/versions/{version_id}/transitions"),
+    # F5 admin console (reviewed 2026-11-13): role-gated reads, dry-run validation,
+    # metadata edits before publication, DRAFT rework, blank-PDF preview.
+    ("GET", "/api/v1/admin/me"),
+    ("GET", "/api/v1/admin/domains"),
+    ("GET", "/api/v1/admin/templates"),
+    ("GET", "/api/v1/admin/templates/{template_id}"),
+    ("POST", "/api/v1/admin/templates/{template_id}/metadata"),
+    ("POST", "/api/v1/admin/templates/{template_id}/versions/validate"),
+    ("GET", "/api/v1/admin/templates/{template_id}/versions/{version_id}"),
+    ("GET", "/api/v1/admin/templates/{template_id}/versions/{version_id}/blank-pdf"),
+    ("POST", "/api/v1/admin/templates/{template_id}/versions/{version_id}/artifacts"),
     ("GET", "/api/v1/entitlements/public-keys"),
     ("GET", "/api/v1/entitlements/wallet"),
     ("POST", "/api/v1/entitlements/leases"),
@@ -80,17 +91,27 @@ def test_route_inventory_is_exactly_the_reviewed_set() -> None:
     assert {(m.upper(), p) for p, ops in spec.items() for m in ops} == EXPECTED_ROUTES
 
 
+#: The only routes that accept file bytes: admin blank-PDF upload, dry-run validation
+#: of an upload, and replacing a DRAFT version's files. All require an admin role.
+ADMIN_UPLOAD_ROUTES = {
+    "/api/v1/admin/templates/{template_id}/versions",
+    "/api/v1/admin/templates/{template_id}/versions/validate",
+    "/api/v1/admin/templates/{template_id}/versions/{version_id}/artifacts",
+}
+
+
 def test_only_the_admin_template_upload_accepts_non_json_bodies() -> None:
-    upload = "/api/v1/admin/templates/{template_id}/versions"
     for path, route in _routes():
         has_file_or_form = bool(route.dependant.body_params) and any(
             type(p.field_info).__name__ in {"File", "Form"} for p in route.dependant.body_params
         )
-        assert has_file_or_form == (path == upload), path
+        assert has_file_or_form == (path in ADMIN_UPLOAD_ROUTES), path
         for method in route.methods:
-            concrete = path.replace("{template_id}", "0" * 8 + "-0000-4000-8000-" + "0" * 12)
+            concrete = path.replace(
+                "{template_id}", "0" * 8 + "-0000-4000-8000-" + "0" * 12
+            ).replace("{version_id}", "1" * 8 + "-1111-4111-8111-" + "1" * 12)
             profile = classify(concrete, method).profile
-            if path == upload:
+            if path in ADMIN_UPLOAD_ROUTES and method == "POST":
                 assert profile is PolicyProfile.ADMIN_TEMPLATE_UPLOAD
             else:
                 assert profile is not PolicyProfile.ADMIN_TEMPLATE_UPLOAD
@@ -103,7 +124,7 @@ def test_only_the_admin_template_upload_accepts_non_json_bodies() -> None:
 def test_citizen_and_admin_json_routes_reject_uploads_and_embedded_binaries(
     method: str, path: str
 ) -> None:
-    if path.endswith("/webhooks/razorpay") or path.endswith("{template_id}/versions"):
+    if path.endswith("/webhooks/razorpay") or path in ADMIN_UPLOAD_ROUTES:
         pytest.skip("separately-profiled route")
     concrete = (
         path.replace("{session_id}", "0" * 8 + "-0000-4000-8000-" + "0" * 12)

@@ -80,6 +80,133 @@
         "title": "ActiveSessionListResponse",
         "type": "object"
       },
+      "AdminAllowedAction": {
+        "properties": {
+          "allowed": {
+            "title": "Allowed",
+            "type": "boolean"
+          },
+          "reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Reason"
+          },
+          "target_status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          }
+        },
+        "required": [
+          "target_status",
+          "allowed"
+        ],
+        "title": "AdminAllowedAction",
+        "type": "object"
+      },
+      "AdminApprovalLogEntry": {
+        "properties": {
+          "actor_admin_id": {
+            "format": "uuid",
+            "title": "Actor Admin Id",
+            "type": "string"
+          },
+          "actor_role": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor Role"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "from_status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "recorded_bundle_sha256": {
+            "title": "Recorded Bundle Sha256",
+            "type": "string"
+          },
+          "review_notes": {
+            "title": "Review Notes",
+            "type": "string"
+          },
+          "to_status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          }
+        },
+        "required": [
+          "id",
+          "from_status",
+          "to_status",
+          "actor_admin_id",
+          "actor_role",
+          "review_notes",
+          "recorded_bundle_sha256",
+          "created_at"
+        ],
+        "title": "AdminApprovalLogEntry",
+        "type": "object"
+      },
+      "AdminAuditEntry": {
+        "properties": {
+          "actor_role": {
+            "title": "Actor Role",
+            "type": "string"
+          },
+          "actor_user_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Actor User Id"
+          },
+          "event_type": {
+            "title": "Event Type",
+            "type": "string"
+          },
+          "metadata": {
+            "additionalProperties": true,
+            "title": "Metadata",
+            "type": "object"
+          },
+          "occurred_at": {
+            "format": "date-time",
+            "title": "Occurred At",
+            "type": "string"
+          }
+        },
+        "required": [
+          "event_type",
+          "actor_user_id",
+          "actor_role",
+          "occurred_at",
+          "metadata"
+        ],
+        "title": "AdminAuditEntry",
+        "type": "object"
+      },
       "AdminCreateApprovedDomainPayload": {
         "additionalProperties": false,
         "properties": {
@@ -220,6 +347,67 @@
         "title": "AdminCreateTemplatePayload",
         "type": "object"
       },
+      "AdminDomainListResponse": {
+        "properties": {
+          "domains": {
+            "items": {
+              "$ref": "#/components/schemas/ApprovedDomainResponse"
+            },
+            "title": "Domains",
+            "type": "array"
+          }
+        },
+        "required": [
+          "domains"
+        ],
+        "title": "AdminDomainListResponse",
+        "type": "object"
+      },
+      "AdminPrincipalResponse": {
+        "properties": {
+          "can_approve": {
+            "title": "Can Approve",
+            "type": "boolean"
+          },
+          "can_create": {
+            "title": "Can Create",
+            "type": "boolean"
+          },
+          "can_manage_domains": {
+            "title": "Can Manage Domains",
+            "type": "boolean"
+          },
+          "can_verify": {
+            "title": "Can Verify",
+            "type": "boolean"
+          },
+          "role": {
+            "enum": [
+              "TEMPLATE_CURATOR",
+              "TEMPLATE_VERIFIER",
+              "TEMPLATE_APPROVER",
+              "SUPER_ADMIN"
+            ],
+            "title": "Role",
+            "type": "string"
+          },
+          "user_id": {
+            "format": "uuid",
+            "title": "User Id",
+            "type": "string"
+          }
+        },
+        "required": [
+          "user_id",
+          "role",
+          "can_create",
+          "can_verify",
+          "can_approve",
+          "can_manage_domains"
+        ],
+        "title": "AdminPrincipalResponse",
+        "type": "object"
+      },
       "AdminRecordSourceCheckPayload": {
         "additionalProperties": false,
         "properties": {
@@ -355,6 +543,301 @@
           "review_notes"
         ],
         "title": "AdminStateTransitionPayload",
+        "type": "object"
+      },
+      "AdminTemplateDetailResponse": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "current_published_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Current Published Version Id"
+          },
+          "government_source": {
+            "$ref": "#/components/schemas/GovernmentSourceResponse"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "identity_editable": {
+            "title": "Identity Editable",
+            "type": "boolean"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "localized_descriptions": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Descriptions",
+            "type": "object"
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "published_semver": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Semver"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "titles_editable": {
+            "title": "Titles Editable",
+            "type": "boolean"
+          },
+          "versions": {
+            "items": {
+              "$ref": "#/components/schemas/AdminVersionSummary"
+            },
+            "title": "Versions",
+            "type": "array"
+          }
+        },
+        "required": [
+          "id",
+          "government_source_id",
+          "slug",
+          "jurisdiction",
+          "official_form_code",
+          "category",
+          "localized_titles",
+          "localized_descriptions",
+          "current_published_version_id",
+          "is_active",
+          "created_at",
+          "government_source",
+          "published_semver",
+          "titles_editable",
+          "identity_editable",
+          "versions"
+        ],
+        "title": "AdminTemplateDetailResponse",
+        "type": "object"
+      },
+      "AdminTemplateListItem": {
+        "properties": {
+          "category": {
+            "$ref": "#/components/schemas/TemplateCategory"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "is_active": {
+            "title": "Is Active",
+            "type": "boolean"
+          },
+          "jurisdiction": {
+            "$ref": "#/components/schemas/Jurisdiction"
+          },
+          "latest_version": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/AdminVersionSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "localized_titles": {
+            "additionalProperties": {
+              "type": "string"
+            },
+            "title": "Localized Titles",
+            "type": "object"
+          },
+          "official_form_code": {
+            "title": "Official Form Code",
+            "type": "string"
+          },
+          "published_semver": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published Semver"
+          },
+          "slug": {
+            "title": "Slug",
+            "type": "string"
+          },
+          "version_count": {
+            "title": "Version Count",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "id",
+          "slug",
+          "jurisdiction",
+          "category",
+          "official_form_code",
+          "localized_titles",
+          "is_active",
+          "version_count",
+          "latest_version",
+          "published_semver",
+          "created_at"
+        ],
+        "title": "AdminTemplateListItem",
+        "type": "object"
+      },
+      "AdminTemplateListResponse": {
+        "properties": {
+          "page": {
+            "title": "Page",
+            "type": "integer"
+          },
+          "page_size": {
+            "title": "Page Size",
+            "type": "integer"
+          },
+          "templates": {
+            "items": {
+              "$ref": "#/components/schemas/AdminTemplateListItem"
+            },
+            "title": "Templates",
+            "type": "array"
+          },
+          "total": {
+            "title": "Total",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "templates",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "AdminTemplateListResponse",
+        "type": "object"
+      },
+      "AdminTemplateMetadataPayload": {
+        "additionalProperties": false,
+        "description": "Edit template metadata before publication (all fields optional).\n\nTitles and descriptions are editable until the template's first publication.\nIdentity fields (form code, category, source) are bound into every version's\nsigned digest and manifest, so they are editable only while no version exists.\nThe slug and jurisdiction are permanent.",
+        "properties": {
+          "category": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/TemplateCategory"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "government_source_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Government Source Id"
+          },
+          "localized_descriptions": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "minProperties": 1,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Localized Descriptions"
+          },
+          "localized_titles": {
+            "anyOf": [
+              {
+                "additionalProperties": {
+                  "type": "string"
+                },
+                "minProperties": 1,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Localized Titles"
+          },
+          "official_form_code": {
+            "anyOf": [
+              {
+                "maxLength": 64,
+                "minLength": 1,
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Official Form Code"
+          }
+        },
+        "title": "AdminTemplateMetadataPayload",
         "type": "object"
       },
       "AdminTemplateResponse": {
@@ -603,6 +1086,368 @@
         "title": "AdminTemplateVersionResponse",
         "type": "object"
       },
+      "AdminVersionDetailResponse": {
+        "properties": {
+          "actions": {
+            "items": {
+              "$ref": "#/components/schemas/AdminAllowedAction"
+            },
+            "title": "Actions",
+            "type": "array"
+          },
+          "approval_history": {
+            "items": {
+              "$ref": "#/components/schemas/AdminApprovalLogEntry"
+            },
+            "title": "Approval History",
+            "type": "array"
+          },
+          "approved_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved At"
+          },
+          "approved_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By Admin Id"
+          },
+          "audit_events": {
+            "items": {
+              "$ref": "#/components/schemas/AdminAuditEntry"
+            },
+            "title": "Audit Events",
+            "type": "array"
+          },
+          "blank_pdf_sha256": {
+            "title": "Blank Pdf Sha256",
+            "type": "string"
+          },
+          "blank_pdf_size_bytes": {
+            "title": "Blank Pdf Size Bytes",
+            "type": "integer"
+          },
+          "bundle_sha256": {
+            "title": "Bundle Sha256",
+            "type": "string"
+          },
+          "can_replace_artifacts": {
+            "title": "Can Replace Artifacts",
+            "type": "boolean"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_admin_id": {
+            "format": "uuid",
+            "title": "Created By Admin Id",
+            "type": "string"
+          },
+          "deprecated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecated At"
+          },
+          "deprecation_reason": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecation Reason"
+          },
+          "field_mapping_manifest": {
+            "additionalProperties": true,
+            "title": "Field Mapping Manifest",
+            "type": "object"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "manifest_sha256": {
+            "title": "Manifest Sha256",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "publisher_ed25519_sig": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Publisher Ed25519 Sig"
+          },
+          "replaced_by_template_slug": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replaced By Template Slug"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "signature_format_version": {
+            "title": "Signature Format Version",
+            "type": "integer"
+          },
+          "signature_verified": {
+            "anyOf": [
+              {
+                "type": "boolean"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signature Verified"
+          },
+          "signing_key_id": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Signing Key Id"
+          },
+          "source_downloaded_at": {
+            "format": "date-time",
+            "title": "Source Downloaded At",
+            "type": "string"
+          },
+          "source_pdf_download_url": {
+            "title": "Source Pdf Download Url",
+            "type": "string"
+          },
+          "source_url_matched_domain": {
+            "title": "Source Url Matched Domain",
+            "type": "string"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          },
+          "template_id": {
+            "format": "uuid",
+            "title": "Template Id",
+            "type": "string"
+          },
+          "verified_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified At"
+          },
+          "verified_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified By Admin Id"
+          }
+        },
+        "required": [
+          "id",
+          "template_id",
+          "semver",
+          "status",
+          "source_pdf_download_url",
+          "source_url_matched_domain",
+          "blank_pdf_sha256",
+          "blank_pdf_size_bytes",
+          "page_count",
+          "manifest_sha256",
+          "bundle_sha256",
+          "signing_key_id",
+          "publisher_ed25519_sig",
+          "signature_format_version",
+          "deprecation_reason",
+          "replaced_by_template_slug",
+          "created_by_admin_id",
+          "verified_by_admin_id",
+          "approved_by_admin_id",
+          "published_at",
+          "created_at",
+          "source_downloaded_at",
+          "verified_at",
+          "approved_at",
+          "deprecated_at",
+          "field_mapping_manifest",
+          "signature_verified",
+          "can_replace_artifacts",
+          "actions",
+          "approval_history",
+          "audit_events"
+        ],
+        "title": "AdminVersionDetailResponse",
+        "type": "object"
+      },
+      "AdminVersionSummary": {
+        "properties": {
+          "approved_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Approved By Admin Id"
+          },
+          "blank_pdf_sha256": {
+            "title": "Blank Pdf Sha256",
+            "type": "string"
+          },
+          "created_at": {
+            "format": "date-time",
+            "title": "Created At",
+            "type": "string"
+          },
+          "created_by_admin_id": {
+            "format": "uuid",
+            "title": "Created By Admin Id",
+            "type": "string"
+          },
+          "deprecated_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Deprecated At"
+          },
+          "id": {
+            "format": "uuid",
+            "title": "Id",
+            "type": "string"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "published_at": {
+            "anyOf": [
+              {
+                "format": "date-time",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Published At"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "signature_format_version": {
+            "title": "Signature Format Version",
+            "type": "integer"
+          },
+          "status": {
+            "$ref": "#/components/schemas/TemplateVersionStatus"
+          },
+          "verified_by_admin_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Verified By Admin Id"
+          }
+        },
+        "required": [
+          "id",
+          "semver",
+          "status",
+          "page_count",
+          "blank_pdf_sha256",
+          "signature_format_version",
+          "created_by_admin_id",
+          "verified_by_admin_id",
+          "approved_by_admin_id",
+          "created_at",
+          "published_at",
+          "deprecated_at"
+        ],
+        "title": "AdminVersionSummary",
+        "type": "object"
+      },
       "ApprovedDomainResponse": {
         "properties": {
           "allow_subdomains": {
@@ -655,6 +1500,9 @@
             "title": "Refresh Token",
             "type": "string"
           },
+          "role": {
+            "$ref": "#/components/schemas/UserRole"
+          },
           "token_type": {
             "const": "Bearer",
             "default": "Bearer",
@@ -675,9 +1523,112 @@
           "refresh_token",
           "expires_in_sec",
           "user_id",
+          "role",
           "wallet_summary"
         ],
         "title": "AuthTokensResponse",
+        "type": "object"
+      },
+      "Body_admin_replace_artifacts_api_v1_admin_templates__template_id__versions__version_id__artifacts_post": {
+        "properties": {
+          "blank_pdf": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Blank Pdf",
+            "type": "string"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "manifest_json": {
+            "title": "Manifest Json",
+            "type": "string"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "source_downloaded_at": {
+            "title": "Source Downloaded At",
+            "type": "string"
+          },
+          "source_pdf_download_url": {
+            "title": "Source Pdf Download Url",
+            "type": "string"
+          },
+          "source_url_matched_domain": {
+            "title": "Source Url Matched Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "blank_pdf",
+          "semver",
+          "source_pdf_download_url",
+          "source_url_matched_domain",
+          "source_downloaded_at",
+          "government_source_id",
+          "manifest_json"
+        ],
+        "title": "Body_admin_replace_artifacts_api_v1_admin_templates__template_id__versions__version_id__artifacts_post",
+        "type": "object"
+      },
+      "Body_admin_validate_version_api_v1_admin_templates__template_id__versions_validate_post": {
+        "properties": {
+          "blank_pdf": {
+            "contentMediaType": "application/octet-stream",
+            "title": "Blank Pdf",
+            "type": "string"
+          },
+          "government_source_id": {
+            "format": "uuid",
+            "title": "Government Source Id",
+            "type": "string"
+          },
+          "manifest_json": {
+            "title": "Manifest Json",
+            "type": "string"
+          },
+          "replace_version_id": {
+            "anyOf": [
+              {
+                "format": "uuid",
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Replace Version Id"
+          },
+          "semver": {
+            "title": "Semver",
+            "type": "string"
+          },
+          "source_downloaded_at": {
+            "title": "Source Downloaded At",
+            "type": "string"
+          },
+          "source_pdf_download_url": {
+            "title": "Source Pdf Download Url",
+            "type": "string"
+          },
+          "source_url_matched_domain": {
+            "title": "Source Url Matched Domain",
+            "type": "string"
+          }
+        },
+        "required": [
+          "blank_pdf",
+          "semver",
+          "source_pdf_download_url",
+          "source_url_matched_domain",
+          "source_downloaded_at",
+          "government_source_id",
+          "manifest_json"
+        ],
+        "title": "Body_admin_validate_version_api_v1_admin_templates__template_id__versions_validate_post",
         "type": "object"
       },
       "Body_upload_template_version_api_v1_admin_templates__template_id__versions_post": {
@@ -1483,6 +2434,94 @@
         "title": "PaymentVerifiedResponse",
         "type": "object"
       },
+      "PdfFieldInspection": {
+        "properties": {
+          "kind": {
+            "title": "Kind",
+            "type": "string"
+          },
+          "name": {
+            "title": "Name",
+            "type": "string"
+          },
+          "options": {
+            "items": {
+              "type": "string"
+            },
+            "title": "Options",
+            "type": "array"
+          }
+        },
+        "required": [
+          "name",
+          "kind",
+          "options"
+        ],
+        "title": "PdfFieldInspection",
+        "type": "object"
+      },
+      "PdfInspection": {
+        "properties": {
+          "fields": {
+            "items": {
+              "$ref": "#/components/schemas/PdfFieldInspection"
+            },
+            "title": "Fields",
+            "type": "array"
+          },
+          "page_count": {
+            "title": "Page Count",
+            "type": "integer"
+          },
+          "pages": {
+            "items": {
+              "$ref": "#/components/schemas/PdfPageInspection"
+            },
+            "title": "Pages",
+            "type": "array"
+          },
+          "sha256": {
+            "title": "Sha256",
+            "type": "string"
+          },
+          "size_bytes": {
+            "title": "Size Bytes",
+            "type": "integer"
+          }
+        },
+        "required": [
+          "sha256",
+          "size_bytes",
+          "page_count",
+          "pages",
+          "fields"
+        ],
+        "title": "PdfInspection",
+        "type": "object"
+      },
+      "PdfPageInspection": {
+        "properties": {
+          "height": {
+            "title": "Height",
+            "type": "number"
+          },
+          "rotation": {
+            "title": "Rotation",
+            "type": "integer"
+          },
+          "width": {
+            "title": "Width",
+            "type": "number"
+          }
+        },
+        "required": [
+          "width",
+          "height",
+          "rotation"
+        ],
+        "title": "PdfPageInspection",
+        "type": "object"
+      },
       "PricingCatalogResponse": {
         "properties": {
           "skus": {
@@ -2215,6 +3254,18 @@
         "title": "UpgradeLeasePayload",
         "type": "object"
       },
+      "UserRole": {
+        "description": "Stored in ``users.role`` and the Access JWT ``role`` claim.",
+        "enum": [
+          "CITIZEN",
+          "TEMPLATE_CURATOR",
+          "TEMPLATE_VERIFIER",
+          "TEMPLATE_APPROVER",
+          "SUPER_ADMIN"
+        ],
+        "title": "UserRole",
+        "type": "string"
+      },
       "ValidationError": {
         "properties": {
           "ctx": {
@@ -2255,6 +3306,38 @@
         "title": "ValidationError",
         "type": "object"
       },
+      "ValidationIssue": {
+        "properties": {
+          "code": {
+            "title": "Code",
+            "type": "string"
+          },
+          "message": {
+            "title": "Message",
+            "type": "string"
+          },
+          "path": {
+            "title": "Path",
+            "type": "string"
+          },
+          "severity": {
+            "enum": [
+              "error",
+              "warning"
+            ],
+            "title": "Severity",
+            "type": "string"
+          }
+        },
+        "required": [
+          "severity",
+          "code",
+          "path",
+          "message"
+        ],
+        "title": "ValidationIssue",
+        "type": "object"
+      },
       "VerifyRazorpayPaymentPayload": {
         "additionalProperties": false,
         "properties": {
@@ -2283,6 +3366,64 @@
           "razorpay_signature"
         ],
         "title": "VerifyRazorpayPaymentPayload",
+        "type": "object"
+      },
+      "VersionValidationReport": {
+        "description": "Dry-run result of a version upload. Nothing is stored.",
+        "properties": {
+          "expected_identity": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Expected Identity"
+          },
+          "issues": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationIssue"
+            },
+            "title": "Issues",
+            "type": "array"
+          },
+          "manifest_sha256": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Manifest Sha256"
+          },
+          "pdf": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/PdfInspection"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          },
+          "valid": {
+            "title": "Valid",
+            "type": "boolean"
+          }
+        },
+        "required": [
+          "valid",
+          "pdf",
+          "manifest_sha256",
+          "expected_identity",
+          "issues"
+        ],
+        "title": "VersionValidationReport",
         "type": "object"
       },
       "WalletBalanceResponse": {
@@ -2456,6 +3597,30 @@
   "openapi": "3.1.0",
   "paths": {
     "/api/v1/admin/domains": {
+      "get": {
+        "operationId": "list_domains_api_v1_admin_domains_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminDomainListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "List Domains",
+        "tags": [
+          "admin-templates"
+        ]
+      },
       "post": {
         "operationId": "create_domain_api_v1_admin_domains_post",
         "requestBody": {
@@ -2496,6 +3661,33 @@
           }
         ],
         "summary": "Create Domain",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/me": {
+      "get": {
+        "description": "The caller's admin role and what it allows. 403 for non-admin accounts.",
+        "operationId": "admin_me_api_v1_admin_me_get",
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminPrincipalResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Me",
         "tags": [
           "admin-templates"
         ]
@@ -2606,6 +3798,131 @@
       }
     },
     "/api/v1/admin/templates": {
+      "get": {
+        "description": "All templates in every lifecycle state (the public catalogue shows PUBLISHED only).",
+        "operationId": "admin_list_templates_api_v1_admin_templates_get",
+        "parameters": [
+          {
+            "in": "query",
+            "name": "q",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "maxLength": 80,
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Q"
+            }
+          },
+          {
+            "in": "query",
+            "name": "status",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TemplateVersionStatus"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Status"
+            }
+          },
+          {
+            "in": "query",
+            "name": "jurisdiction",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/Jurisdiction"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Jurisdiction"
+            }
+          },
+          {
+            "in": "query",
+            "name": "category",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "$ref": "#/components/schemas/TemplateCategory"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "Category"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page",
+            "required": false,
+            "schema": {
+              "default": 1,
+              "minimum": 1,
+              "title": "Page",
+              "type": "integer"
+            }
+          },
+          {
+            "in": "query",
+            "name": "page_size",
+            "required": false,
+            "schema": {
+              "default": 20,
+              "maximum": 100,
+              "minimum": 1,
+              "title": "Page Size",
+              "type": "integer"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateListResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin List Templates",
+        "tags": [
+          "admin-templates"
+        ]
+      },
       "post": {
         "operationId": "create_template_api_v1_admin_templates_post",
         "requestBody": {
@@ -2646,6 +3963,112 @@
           }
         ],
         "summary": "Create Template",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}": {
+      "get": {
+        "operationId": "admin_get_template_api_v1_admin_templates__template_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Get Template",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/metadata": {
+      "post": {
+        "operationId": "admin_update_metadata_api_v1_admin_templates__template_id__metadata_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminTemplateMetadataPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Update Metadata",
         "tags": [
           "admin-templates"
         ]
@@ -2704,6 +4127,247 @@
           }
         ],
         "summary": "Upload Template Version",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/validate": {
+      "post": {
+        "description": "Run every upload check and report all findings. Nothing is stored.\n\nPass ``replace_version_id`` to check a rework of an existing DRAFT version: its\nown version number is then not reported as a duplicate.",
+        "operationId": "admin_validate_version_api_v1_admin_templates__template_id__versions_validate_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_admin_validate_version_api_v1_admin_templates__template_id__versions_validate_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/VersionValidationReport"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Validate Version",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/{version_id}": {
+      "get": {
+        "operationId": "admin_get_version_api_v1_admin_templates__template_id__versions__version_id__get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminVersionDetailResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Get Version",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/{version_id}/artifacts": {
+      "post": {
+        "description": "Replace a DRAFT version's PDF and manifest (its maker only), e.g. after rejection.",
+        "operationId": "admin_replace_artifacts_api_v1_admin_templates__template_id__versions__version_id__artifacts_post",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_admin_replace_artifacts_api_v1_admin_templates__template_id__versions__version_id__artifacts_post"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/AdminTemplateVersionResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Replace Artifacts",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/templates/{template_id}/versions/{version_id}/blank-pdf": {
+      "get": {
+        "description": "The version's blank government PDF for reviewer preview (any lifecycle state).",
+        "operationId": "admin_get_blank_pdf_api_v1_admin_templates__template_id__versions__version_id__blank_pdf_get",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "template_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Template Id",
+              "type": "string"
+            }
+          },
+          {
+            "in": "path",
+            "name": "version_id",
+            "required": true,
+            "schema": {
+              "format": "uuid",
+              "title": "Version Id",
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "content": {
+              "application/pdf": {}
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Admin Get Blank Pdf",
         "tags": [
           "admin-templates"
         ]

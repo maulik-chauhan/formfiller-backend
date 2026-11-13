@@ -59,6 +59,22 @@ class TemplateEvent:
     TEMPLATE_CREATED = "ADMIN_TEMPLATE_CREATED"
     VERSION_CREATED = "ADMIN_TEMPLATE_VERSION_CREATED"
     VERSION_TRANSITION = "ADMIN_TEMPLATE_VERSION_TRANSITION"
+    VERSION_SUPERSEDED = "ADMIN_TEMPLATE_VERSION_SUPERSEDED"
+    VERSION_ARTIFACTS_REPLACED = "ADMIN_TEMPLATE_VERSION_ARTIFACTS_REPLACED"
+    TEMPLATE_METADATA_UPDATED = "ADMIN_TEMPLATE_METADATA_UPDATED"
+
+
+#: Clock skew tolerated when checking that a source download time is not in the future.
+_FUTURE_TOLERANCE = dt.timedelta(minutes=5)
+
+
+def check_source_downloaded_at(value: dt.datetime) -> str | None:
+    """Return a problem description, or ``None`` when the timestamp is acceptable."""
+    if value.tzinfo is None:
+        return "source_downloaded_at must include a timezone offset (for example +05:30)"
+    if value > dt.datetime.now(tz=dt.UTC) + _FUTURE_TOLERANCE:
+        return "source_downloaded_at cannot be in the future"
+    return None
 
 
 #: Permitted ``(from_status, to_status)`` transitions → roles allowed to perform
@@ -299,6 +315,9 @@ class TemplateAdminService:
         if template.government_source_id != data.government_source_id:
             raise ValidationFailedError("government_source_id does not match the template")
 
+        problem = check_source_downloaded_at(data.source_downloaded_at)
+        if problem:
+            raise ValidationFailedError(problem)
         validated = validate_blank_pdf(data.pdf_bytes)
         # The manifest must satisfy form-manifest contract v1 and describe exactly
         # this template version and this PDF (identity, pages, real form fields).
@@ -427,10 +446,14 @@ class TemplateAdminService:
             raise ValidationFailedError(
                 "deprecation_reason / replaced_by_template_slug apply only to DEPRECATED"
             )
+        if target == S.DEPRECATED:
+            await self._check_withdrawal(version, payload)
 
         now = _now()
+        superseded: list[TemplateVersion] = []
         if target == S.PUBLISHED:
             await self._sign_for_publication(version)
+            superseded = await self._supersede_published(auth, version, now)
         self._apply_transition(auth, version, target, now)
         if target == S.DEPRECATED:
             version.deprecation_reason = payload.deprecation_reason
@@ -467,8 +490,85 @@ class TemplateAdminService:
                 "to_status": str(target),
             },
         )
+        for old in superseded:
+            await self._audit(
+                auth,
+                TemplateEvent.VERSION_SUPERSEDED,
+                "template_version",
+                str(old.id),
+                {
+                    "version_id": str(old.id),
+                    "template_id": str(template_id),
+                    "semver": old.semver,
+                    "superseded_by_version_id": str(version.id),
+                },
+            )
         await self.session.commit()
         return version
+
+    async def _check_withdrawal(
+        self, version: TemplateVersion, payload: schemas.AdminStateTransitionPayload
+    ) -> None:
+        """A withdrawal must say why, and a named replacement must really exist."""
+        if not payload.deprecation_reason or not payload.deprecation_reason.strip():
+            raise ValidationFailedError(
+                "deprecation_reason is required: tell users why this version was withdrawn"
+            )
+        slug = payload.replaced_by_template_slug
+        if slug is None:
+            return
+        template = await self.session.get(FormTemplate, version.template_id)
+        if template is not None and template.slug == slug:
+            raise ValidationFailedError(
+                "replaced_by_template_slug must name a different template; a newer version "
+                "of the same template supersedes this one automatically when published"
+            )
+        replacement = (
+            await self.session.execute(select(FormTemplate).where(FormTemplate.slug == slug))
+        ).scalar_one_or_none()
+        if replacement is None:
+            raise ValidationFailedError(f"replaced_by_template_slug {slug!r} does not exist")
+
+    async def _supersede_published(
+        self, auth: AuthContext, version: TemplateVersion, now: dt.datetime
+    ) -> list[TemplateVersion]:
+        """Publishing a new version withdraws the template's previous published one.
+
+        Exactly one version of a template is ever PUBLISHED, so clients checking the
+        status of an older version learn it is no longer current. The older row's
+        artifacts and signature stay immutable; only its lifecycle state changes.
+        """
+        previous = (
+            (
+                await self.session.execute(
+                    select(TemplateVersion)
+                    .where(
+                        TemplateVersion.template_id == version.template_id,
+                        TemplateVersion.status == S.PUBLISHED,
+                        TemplateVersion.id != version.id,
+                    )
+                    .with_for_update()
+                )
+            )
+            .scalars()
+            .all()
+        )
+        for old in previous:
+            old.status = S.DEPRECATED
+            old.deprecated_at = now
+            old.deprecation_reason = f"Superseded by version {version.semver}"
+            self.session.add(
+                TemplateApprovalLog(
+                    id=uuid.uuid4(),
+                    template_version_id=old.id,
+                    actor_admin_id=auth.user.id,
+                    from_status=S.PUBLISHED,
+                    to_status=S.DEPRECATED,
+                    recorded_bundle_sha256=old.bundle_sha256,
+                    review_notes=f"Automatically superseded by version {version.semver}",
+                )
+            )
+        return list(previous)
 
     def _apply_transition(
         self,

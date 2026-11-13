@@ -84,6 +84,21 @@ Withdraw a template to see lifecycle handling:
 python -m scripts.seed_dev --deprecate test-fillable-form
 ```
 
+## Admin console (F5)
+
+Sign in once with each test number you want to use, then give it a role:
+
+```bash
+python -m scripts.grant_role +919876550001 TEMPLATE_CURATOR
+```
+
+Roles: `TEMPLATE_CURATOR` (maker), `TEMPLATE_VERIFIER` (checker), `TEMPLATE_APPROVER`,
+`SUPER_ADMIN`. Sign in again so the session carries the role, then open
+http://localhost:8080/admin. Publishing needs three different accounts (maker, checker,
+approver). The OTP request limit is 5 per hour per network; for a long manual session
+you can add `OTP_REQUEST_MAX_PER_HOUR=100` to your local `backend/.env` and remove it
+afterwards.
+
 ## 5. Tests
 
 Backend (needs the test database):

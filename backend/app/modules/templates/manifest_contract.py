@@ -19,7 +19,7 @@ import re
 from dataclasses import dataclass, field
 from typing import Any, TypeGuard
 
-from app.core.errors import AppError
+from app.core.errors import AppError, ProblemDetail
 
 SCHEMA_VERSION = 1
 MANIFEST_KIND = "govforms.form-manifest"
@@ -84,6 +84,13 @@ class ManifestValidationError(AppError):
         shown = "; ".join(f"[{i.code}] {i.path}: {i.message}" for i in issues[:10])
         more = f" (+{len(issues) - 10} more)" if len(issues) > 10 else ""
         super().__init__(shown + more)
+
+    def to_problem(self, instance: str | None = None) -> ProblemDetail:
+        problem = super().to_problem(instance)
+        problem.errors = [
+            {"field": i.path, "code": i.code, "message": i.message} for i in self.issues[:100]
+        ]
+        return problem
 
 
 @dataclass(frozen=True)

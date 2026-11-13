@@ -34,7 +34,12 @@ _FORBIDDEN_MARKERS: tuple[bytes, ...] = (
     b".govvault",
 )
 
-_ADMIN_UPLOAD_RE = re.compile(r"^/api/v1/admin/templates/[0-9a-fA-F-]{36}/versions$")
+# Admin blank-PDF uploads: create a version, dry-run validate one, or replace the
+# artifacts of a DRAFT version. These are the only routes that accept file bytes.
+_UUID = r"[0-9a-fA-F-]{36}"
+_ADMIN_UPLOAD_RE = re.compile(
+    rf"^/api/v1/admin/templates/{_UUID}/versions(/validate|/{_UUID}/artifacts)?$"
+)
 _WEBHOOK_PATH = "/api/v1/payments/webhooks/razorpay"
 
 

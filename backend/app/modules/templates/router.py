@@ -5,10 +5,10 @@ from __future__ import annotations
 import json
 import uuid
 
-from fastapi import APIRouter, Depends, File, Form, Path, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Form, Path, Query, Response, UploadFile, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from app.core.constants import Jurisdiction, TemplateCategory, UserRole
+from app.core.constants import Jurisdiction, TemplateCategory, TemplateVersionStatus, UserRole
 from app.core.dependencies import (
     AuthContext,
     RequestContext,
@@ -20,6 +20,12 @@ from app.core.errors import ValidationFailedError
 from app.core.signing import CURRENT_SIGNATURE_FORMAT_VERSION, publisher_key_set
 from app.db.session import get_session
 from app.modules.templates import schemas
+from app.modules.templates.admin_service import (
+    ADMIN_ROLES,
+    MAKER_ROLES,
+    TemplateConsoleService,
+    TemplateListFilters,
+)
 from app.modules.templates.service import (
     TemplateAdminService,
     TemplateReadService,
@@ -40,6 +46,55 @@ def _admin_service(
 
 def _read_service(session: AsyncSession = Depends(get_session)) -> TemplateReadService:
     return TemplateReadService(session)
+
+
+def _console_service(
+    session: AsyncSession = Depends(get_session),
+    ctx: RequestContext = Depends(get_request_context),
+) -> TemplateConsoleService:
+    return TemplateConsoleService(session, ctx=ctx)
+
+
+#: Any template-administration role. Citizens are refused (403) on every /admin route.
+_any_admin = require_roles(*ADMIN_ROLES)
+_maker = require_roles(*MAKER_ROLES)
+
+
+def _upload_input(
+    *,
+    semver: str,
+    source_pdf_download_url: str,
+    source_url_matched_domain: str,
+    source_downloaded_at: str,
+    government_source_id: uuid.UUID,
+    manifest: object,
+    pdf_bytes: bytes,
+) -> VersionUploadInput:
+    import datetime as dt
+
+    try:
+        downloaded_at = dt.datetime.fromisoformat(source_downloaded_at)
+    except ValueError as exc:
+        raise ValidationFailedError("source_downloaded_at must be ISO-8601") from exc
+    return VersionUploadInput(
+        semver=semver,
+        source_pdf_download_url=source_pdf_download_url,
+        source_url_matched_domain=source_url_matched_domain,
+        source_downloaded_at=downloaded_at,
+        field_mapping_manifest=manifest,  # type: ignore[arg-type]
+        government_source_id=government_source_id,
+        pdf_bytes=pdf_bytes,
+    )
+
+
+def _parse_manifest(manifest_json: str) -> dict[str, object]:
+    try:
+        manifest = json.loads(manifest_json)
+    except ValueError as exc:
+        raise ValidationFailedError("manifest_json must be valid JSON") from exc
+    if not isinstance(manifest, dict):
+        raise ValidationFailedError("manifest_json must be a JSON object")
+    return manifest
 
 
 # --------------------------------------------------------------------------- #
@@ -313,4 +368,186 @@ async def transition_version(
     service: TemplateAdminService = Depends(_admin_service),
 ) -> schemas.AdminTemplateVersionResponse:
     version = await service.transition_version(auth, template_id, version_id, payload)
+    return schemas.AdminTemplateVersionResponse.model_validate(version)
+
+
+# --------------------------------------------------------------------------- #
+# Admin console (F5): read models, dry-run validation, draft rework
+# --------------------------------------------------------------------------- #
+@admin_router.get("/me", response_model=schemas.AdminPrincipalResponse)
+async def admin_me(auth: AuthContext = Depends(_any_admin)) -> schemas.AdminPrincipalResponse:
+    """The caller's admin role and what it allows. 403 for non-admin accounts."""
+    return TemplateConsoleService.principal(auth)
+
+
+@admin_router.get("/domains", response_model=schemas.AdminDomainListResponse)
+async def list_domains(
+    _auth: AuthContext = Depends(_any_admin),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminDomainListResponse:
+    rows = await service.list_domains()
+    return schemas.AdminDomainListResponse(
+        domains=[schemas.ApprovedDomainResponse.model_validate(r) for r in rows]
+    )
+
+
+@admin_router.get("/templates", response_model=schemas.AdminTemplateListResponse)
+async def admin_list_templates(
+    q: str | None = Query(default=None, max_length=80),
+    status_filter: TemplateVersionStatus | None = Query(default=None, alias="status"),
+    jurisdiction: Jurisdiction | None = Query(default=None),
+    category: TemplateCategory | None = Query(default=None),
+    page: int = Query(default=1, ge=1),
+    page_size: int = Query(default=20, ge=1, le=100),
+    _auth: AuthContext = Depends(_any_admin),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminTemplateListResponse:
+    """All templates in every lifecycle state (the public catalogue shows PUBLISHED only)."""
+    items, total = await service.list_templates(
+        TemplateListFilters(
+            query=q or None,
+            status=status_filter,
+            jurisdiction=jurisdiction.value if jurisdiction else None,
+            category=category.value if category else None,
+            page=page,
+            page_size=page_size,
+        )
+    )
+    return schemas.AdminTemplateListResponse(
+        templates=items, page=page, page_size=page_size, total=total
+    )
+
+
+@admin_router.get("/templates/{template_id}", response_model=schemas.AdminTemplateDetailResponse)
+async def admin_get_template(
+    template_id: uuid.UUID,
+    _auth: AuthContext = Depends(_any_admin),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminTemplateDetailResponse:
+    return await service.get_template(template_id)
+
+
+@admin_router.post(
+    "/templates/{template_id}/metadata", response_model=schemas.AdminTemplateResponse
+)
+async def admin_update_metadata(
+    template_id: uuid.UUID,
+    payload: schemas.AdminTemplateMetadataPayload,
+    auth: AuthContext = Depends(_maker),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminTemplateResponse:
+    template = await service.update_metadata(auth, template_id, payload)
+    return schemas.AdminTemplateResponse.model_validate(template)
+
+
+@admin_router.post(
+    "/templates/{template_id}/versions/validate",
+    response_model=schemas.VersionValidationReport,
+)
+async def admin_validate_version(
+    template_id: uuid.UUID,
+    blank_pdf: UploadFile = File(...),
+    semver: str = Form(...),
+    source_pdf_download_url: str = Form(...),
+    source_url_matched_domain: str = Form(...),
+    source_downloaded_at: str = Form(...),
+    government_source_id: uuid.UUID = Form(...),
+    manifest_json: str = Form(...),
+    replace_version_id: uuid.UUID | None = Form(default=None),
+    _auth: AuthContext = Depends(_maker),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.VersionValidationReport:
+    """Run every upload check and report all findings. Nothing is stored.
+
+    Pass ``replace_version_id`` to check a rework of an existing DRAFT version: its
+    own version number is then not reported as a duplicate.
+    """
+    json_error: str | None = None
+    manifest: object = {}
+    try:
+        manifest = _parse_manifest(manifest_json)
+    except ValidationFailedError as exc:
+        json_error = exc.detail
+    data = _upload_input(
+        semver=semver,
+        source_pdf_download_url=source_pdf_download_url,
+        source_url_matched_domain=source_url_matched_domain,
+        source_downloaded_at=source_downloaded_at,
+        government_source_id=government_source_id,
+        manifest=manifest,
+        pdf_bytes=await blank_pdf.read(),
+    )
+    return await service.validate_upload(
+        template_id,
+        data,
+        manifest_json_error=json_error,
+        replacing=(
+            await service.version_for_rework(template_id, replace_version_id)
+            if replace_version_id
+            else None
+        ),
+    )
+
+
+@admin_router.get(
+    "/templates/{template_id}/versions/{version_id}",
+    response_model=schemas.AdminVersionDetailResponse,
+)
+async def admin_get_version(
+    template_id: uuid.UUID,
+    version_id: uuid.UUID,
+    auth: AuthContext = Depends(_any_admin),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminVersionDetailResponse:
+    return await service.get_version(auth, template_id, version_id)
+
+
+@admin_router.get(
+    "/templates/{template_id}/versions/{version_id}/blank-pdf",
+    response_class=Response,
+    responses={200: {"content": {"application/pdf": {}}}},
+)
+async def admin_get_blank_pdf(
+    template_id: uuid.UUID,
+    version_id: uuid.UUID,
+    _auth: AuthContext = Depends(_any_admin),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> Response:
+    """The version's blank government PDF for reviewer preview (any lifecycle state)."""
+    data = await service.read_blank_pdf(template_id, version_id)
+    return Response(
+        content=data,
+        media_type="application/pdf",
+        headers={"Cache-Control": "no-store", "X-Content-Type-Options": "nosniff"},
+    )
+
+
+@admin_router.post(
+    "/templates/{template_id}/versions/{version_id}/artifacts",
+    response_model=schemas.AdminTemplateVersionResponse,
+)
+async def admin_replace_artifacts(
+    template_id: uuid.UUID,
+    version_id: uuid.UUID,
+    blank_pdf: UploadFile = File(...),
+    semver: str = Form(...),
+    source_pdf_download_url: str = Form(...),
+    source_url_matched_domain: str = Form(...),
+    source_downloaded_at: str = Form(...),
+    government_source_id: uuid.UUID = Form(...),
+    manifest_json: str = Form(...),
+    auth: AuthContext = Depends(_maker),
+    service: TemplateConsoleService = Depends(_console_service),
+) -> schemas.AdminTemplateVersionResponse:
+    """Replace a DRAFT version's PDF and manifest (its maker only), e.g. after rejection."""
+    data = _upload_input(
+        semver=semver,
+        source_pdf_download_url=source_pdf_download_url,
+        source_url_matched_domain=source_url_matched_domain,
+        source_downloaded_at=source_downloaded_at,
+        government_source_id=government_source_id,
+        manifest=_parse_manifest(manifest_json),
+        pdf_bytes=await blank_pdf.read(),
+    )
+    version = await service.replace_artifacts(auth, template_id, version_id, data)
     return schemas.AdminTemplateVersionResponse.model_validate(version)

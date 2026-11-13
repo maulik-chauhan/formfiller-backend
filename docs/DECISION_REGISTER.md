@@ -13,6 +13,7 @@ decision fails closed until the decision is recorded here with an approver and d
 | DEC-5 | Stable shared-environment secrets | **Open** | Infrastructure / Security |
 | DEC-6 | SMS (OTP) provider | **Open** | Product + Legal (DLT registration) |
 | DEC-7 | Refresh-token storage (C-2) | **Open** | Application Security |
+| DEC-8 | Admin role provisioning and review | **Open** | Security + Operations |
 | COM-01 | Free quota and pricing | **Open** | Product owner |
 | M7 | eSign | **Disabled** | Legal + Product (separate milestone) |
 | LEG-1 | DPDP / retention review | **Open** | Legal counsel |
@@ -74,6 +75,16 @@ gateway (with DLT template registration) must be selected and integrated.
 Tokens are memory-only in the browser, so a page reload signs the user out. Moving the
 refresh token to an HttpOnly cookie would change the backend auth model and CORS
 (credentials). Left unchanged deliberately; needs a security decision.
+
+## DEC-8 — Admin role provisioning
+
+- **Dependency:** the admin console and every `/admin` API trust `users.role`. There is
+  no API or screen that grants a role, by design.
+- **Implemented now:** `python -m scripts.grant_role` for local development only (it
+  refuses to run in staging/production and writes an `ADMIN_ROLE_ASSIGNED` audit event).
+- **Needs:** who may grant curator/verifier/approver/super-admin roles in production,
+  how a grant is approved and recorded, periodic access review, and how many people
+  must hold each role so maker-checker separation is always possible.
 
 ## COM-01, M7, LEG-1
 
