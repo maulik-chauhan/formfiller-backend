@@ -1,0 +1,420 @@
+{
+  "schema_version": 1,
+  "kind": "govforms.form-manifest",
+  "identity": {
+    "slug": "ka-kmv-12-conductor-licence",
+    "jurisdiction": "KARNATAKA_STATE",
+    "category": "TRANSPORT",
+    "official_form_code": "KMV-12",
+    "semver": "1.0.0",
+    "page_count": 1,
+    "blank_pdf_sha256": "3795a568273f3f95642ca2b8f4f1c9b3744e90c88334f7fe41abd26f887263ab"
+  },
+  "sections": [
+    {
+      "id": "applicant",
+      "title": "Applicant",
+      "fields": [
+        {
+          "id": "applicant_name",
+          "type": "text",
+          "label": "1. Name",
+          "required": true,
+          "validation": {
+            "max_length": 40,
+            "pattern": "alpha_space"
+          },
+          "profile_key": "full_name",
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 338,
+              "y": 680,
+              "width": 215,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "father_name",
+          "type": "text",
+          "label": "2. Name of father",
+          "required": true,
+          "validation": {
+            "max_length": 40,
+            "pattern": "alpha_space"
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 339,
+              "y": 651,
+              "width": 214,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "date_of_birth",
+          "type": "date",
+          "label": "3. Date of birth",
+          "help": "Proof of date of birth must be attached to the printed form.",
+          "required": true,
+          "validation": {
+            "not_future": true
+          },
+          "profile_key": "date_of_birth",
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 339,
+              "y": 624,
+              "width": 120,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false,
+              "date_format": "DD/MM/YYYY"
+            }
+          ]
+        },
+        {
+          "id": "present_address",
+          "type": "multiline",
+          "label": "4. Present address",
+          "help": "House, street, area, town, district and PIN code.",
+          "required": true,
+          "validation": {
+            "min_length": 10,
+            "max_length": 100
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 343,
+              "y": 598,
+              "width": 232,
+              "height": 18,
+              "font": "Helvetica",
+              "size": 8,
+              "align": "left",
+              "multiline": true,
+              "line_height": 9
+            }
+          ]
+        },
+        {
+          "id": "permanent_address",
+          "type": "multiline",
+          "label": "5. Permanent address",
+          "help": "House, street, area, town, district and PIN code.",
+          "required": true,
+          "validation": {
+            "min_length": 10,
+            "max_length": 100
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 344,
+              "y": 571,
+              "width": 231,
+              "height": 18,
+              "font": "Helvetica",
+              "size": 8,
+              "align": "left",
+              "multiline": true,
+              "line_height": 9
+            }
+          ]
+        },
+        {
+          "id": "educational_qualification",
+          "type": "text",
+          "label": "6. Educational qualification",
+          "help": "Proof of qualification must be attached to the printed form.",
+          "required": true,
+          "validation": {
+            "max_length": 40
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 350,
+              "y": 542,
+              "width": 205,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "declarations",
+      "title": "Declarations",
+      "fields": [
+        {
+          "id": "convictions",
+          "type": "text",
+          "label": "7. Convictions",
+          "help": "Write \"No convictions\", or briefly list the convictions.",
+          "required": true,
+          "validation": {
+            "max_length": 36
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 370,
+              "y": 500,
+              "width": 188,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "previous_licence",
+          "type": "radio",
+          "label": "8. Previous conductor's licence",
+          "required": true,
+          "options": [
+            {
+              "value": "not_held",
+              "label": "Not previously held"
+            },
+            {
+              "value": "held",
+              "label": "Previously held"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 355,
+              "y": 473,
+              "width": 200,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "option_text": "label"
+            }
+          ]
+        },
+        {
+          "id": "previous_licence_issuer",
+          "type": "text",
+          "label": "8. Licence previously issued by",
+          "required": true,
+          "validation": {
+            "max_length": 34
+          },
+          "visible_when": {
+            "field": "previous_licence",
+            "op": "equals",
+            "value": "held"
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 371,
+              "y": 458,
+              "width": 187,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "not_disqualified",
+          "type": "checkbox",
+          "label": "9. I am not disqualified for holding a conductor's licence",
+          "required": true,
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 372,
+              "y": 433,
+              "size": 10,
+              "mark": "check"
+            }
+          ]
+        },
+        {
+          "id": "age_and_truth_declaration",
+          "type": "checkbox",
+          "label": "10. I declare that I am not less than 18 years of age, that the above statements are true, and I attach two copies of a recent photograph",
+          "required": true,
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 368,
+              "y": 378,
+              "size": 10,
+              "mark": "check"
+            }
+          ]
+        },
+        {
+          "id": "residence_type",
+          "type": "radio",
+          "label": "11. I ordinarily",
+          "required": true,
+          "options": [
+            {
+              "value": "reside",
+              "label": "reside at"
+            },
+            {
+              "value": "business",
+              "label": "carry on business at"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 125,
+              "y": 334,
+              "width": 95,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "option_text": "label"
+            }
+          ]
+        },
+        {
+          "id": "residence_place",
+          "type": "text",
+          "label": "11. Place (address)",
+          "required": true,
+          "validation": {
+            "max_length": 60
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 222,
+              "y": 334,
+              "width": 336,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "residence_district",
+          "type": "text",
+          "label": "11. District",
+          "required": true,
+          "validation": {
+            "max_length": 40,
+            "pattern": "alpha_space"
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 175,
+              "y": 320,
+              "width": 200,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "fee_rupees",
+          "type": "number",
+          "label": "12. Fee tendered (rupees)",
+          "help": "Enter the fee prescribed by the licensing authority.",
+          "required": true,
+          "validation": {
+            "min": 0,
+            "max": 99999
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 231,
+              "y": 293,
+              "width": 76,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "application_date",
+          "type": "date",
+          "label": "Dated",
+          "required": true,
+          "validation": {
+            "not_future": true
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 126,
+              "y": 247,
+              "width": 90,
+              "height": 14,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false,
+              "date_format": "DD/MM/YYYY"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

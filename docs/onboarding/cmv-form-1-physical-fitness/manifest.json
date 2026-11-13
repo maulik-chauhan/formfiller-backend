@@ -1,0 +1,601 @@
+{
+  "schema_version": 1,
+  "kind": "govforms.form-manifest",
+  "identity": {
+    "slug": "cmv-form-1-physical-fitness",
+    "jurisdiction": "KARNATAKA_STATE",
+    "category": "TRANSPORT",
+    "official_form_code": "CMV-FORM-1",
+    "semver": "1.0.0",
+    "page_count": 1,
+    "blank_pdf_sha256": "c936da8e47f9e913961ca3566ced4ec24713d8c64cd553f6cfb26df380f1682c"
+  },
+  "sections": [
+    {
+      "id": "applicant",
+      "title": "Applicant",
+      "fields": [
+        {
+          "id": "applicant_name",
+          "type": "text",
+          "label": "1. Name of the applicant",
+          "required": true,
+          "validation": {
+            "max_length": 55,
+            "pattern": "alpha_space"
+          },
+          "profile_key": "full_name",
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 715,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "relation_name",
+          "type": "text",
+          "label": "2. Son/Wife/Daughter of",
+          "required": true,
+          "validation": {
+            "max_length": 55,
+            "pattern": "alpha_space"
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 694,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "permanent_address",
+          "type": "address",
+          "label": "3. Permanent address",
+          "help": "Printed over the four lines provided.",
+          "required": true,
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 672,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "line1"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 654,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "line2"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 635,
+              "width": 150,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "city"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 392,
+              "y": 635,
+              "width": 158,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "district"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 616,
+              "width": 150,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "state"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 392,
+              "y": 616,
+              "width": 158,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "pincode"
+            }
+          ]
+        },
+        {
+          "id": "temporary_address",
+          "type": "address",
+          "label": "4. Temporary address / Official address (if any)",
+          "help": "Leave blank if not applicable.",
+          "required": false,
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 598,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "line1"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 579,
+              "width": 316,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "line2"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 560,
+              "width": 150,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "city"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 392,
+              "y": 560,
+              "width": 158,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "district"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 542,
+              "width": 150,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "state"
+            },
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 392,
+              "y": 542,
+              "width": 158,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false,
+              "source": "pincode"
+            }
+          ]
+        },
+        {
+          "id": "date_of_birth",
+          "type": "date",
+          "label": "5. (a) Date of birth",
+          "required": true,
+          "validation": {
+            "not_future": true
+          },
+          "profile_key": "date_of_birth",
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 525,
+              "width": 110,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false,
+              "date_format": "DD/MM/YYYY"
+            }
+          ]
+        },
+        {
+          "id": "age_on_application",
+          "type": "number",
+          "label": "5. (b) Age on date of application (completed years)",
+          "help": "Enter your age yourself; it is not calculated from the date of birth.",
+          "required": true,
+          "validation": {
+            "min": 1,
+            "max": 120
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 512,
+              "width": 60,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 10,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "identification_mark_1",
+          "type": "text",
+          "label": "6. Identification mark (1)",
+          "required": true,
+          "validation": {
+            "max_length": 60
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 490,
+              "width": 310,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        },
+        {
+          "id": "identification_mark_2",
+          "type": "text",
+          "label": "6. Identification mark (2)",
+          "required": false,
+          "validation": {
+            "max_length": 60
+          },
+          "pdf": [
+            {
+              "type": "text_at",
+              "page": 0,
+              "x": 234,
+              "y": 454,
+              "width": 310,
+              "height": 13,
+              "font": "Helvetica",
+              "size": 9,
+              "align": "left",
+              "multiline": false
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "declaration",
+      "title": "Declaration as to physical fitness",
+      "description": "For each question the answer that does not apply is struck out on the printed form.",
+      "fields": [
+        {
+          "id": "q_a_epilepsy",
+          "type": "radio",
+          "label": "(a) Do you suffer from epilepsy or from sudden attacks of loss of consciousness or giddiness from any cause?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 544,
+              "y": 388,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 528,
+              "y": 388,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ]
+        },
+        {
+          "id": "q_b_eyesight",
+          "type": "radio",
+          "label": "(b) Are you able to distinguish with each eye (or if you have held a driving licence to drive a motor vehicle for a period of not less than five …",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 543,
+              "y": 324,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 526,
+              "y": 324,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ],
+          "help": "(continued) … years and if you have lost the sight of one eye after the said period of five years and if the application is for driving a light motor vehicle other than a transport vehicle fitted with an outside mirror on the steering wheel side) or with one eye, at a distance of 25 metres in good day light (with glasses, if worn) a motor car number plate?"
+        },
+        {
+          "id": "q_c_limbs",
+          "type": "radio",
+          "label": "(c) Have you lost either hand or foot or are you suffering from any defect of muscular power of either arm or leg?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 547,
+              "y": 294,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 530,
+              "y": 294,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ]
+        },
+        {
+          "id": "q_d_colours",
+          "type": "radio",
+          "label": "(d) Can you readily distinguish the pigmentary colours, red and green?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 547,
+              "y": 280,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 530,
+              "y": 280,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ]
+        },
+        {
+          "id": "q_e_night_blindness",
+          "type": "radio",
+          "label": "(e) Do you suffer from night blindness?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 547,
+              "y": 267,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 530,
+              "y": 267,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ]
+        },
+        {
+          "id": "q_f_hearing",
+          "type": "radio",
+          "label": "(f) Are you so deaf so as to be unable to hear (and if the application is for driving a light motor vehicle, with or without hearing aid) the ordinary sound signal?",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 544,
+              "y": 240,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 527,
+              "y": 240,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ]
+        },
+        {
+          "id": "q_g_other",
+          "type": "radio",
+          "label": "(g) Do you suffer from any other disease or disability likely to cause your driving of a motor vehicle to be a source of danger to the public, if so, give details.",
+          "required": true,
+          "options": [
+            {
+              "value": "yes",
+              "label": "Yes"
+            },
+            {
+              "value": "no",
+              "label": "No"
+            }
+          ],
+          "pdf": [
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 544,
+              "y": 213,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "yes"
+            },
+            {
+              "type": "mark_at",
+              "page": 0,
+              "x": 527,
+              "y": 213,
+              "size": 12,
+              "mark": "cross",
+              "on_value": "no"
+            }
+          ],
+          "help": "If you answer Yes, the form has no space for details: give full particulars separately, as Note (1) on the form requires."
+        }
+      ]
+    }
+  ]
+}

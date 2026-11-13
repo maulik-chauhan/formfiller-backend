@@ -11,8 +11,18 @@ from __future__ import annotations
 
 import io
 from dataclasses import dataclass
+from typing import Any
 
 from pypdf import PdfReader
+from pypdf.generic import (
+    ArrayObject,
+    DictionaryObject,
+    FloatObject,
+    IndirectObject,
+    NameObject,
+    NullObject,
+    NumberObject,
+)
 
 from app.config import get_settings
 from app.core.constants import MAX_BLANK_PDF_BYTES, MAX_TEMPLATE_PAGE_COUNT
@@ -30,9 +40,33 @@ _FORBIDDEN_TOKENS: tuple[bytes, ...] = (
     b"/Launch",
     b"/EmbeddedFiles",
     b"/EmbeddedFile",
-    b"/OpenAction",
     b"/AA",
 )
+
+#: ``/OpenAction`` is allowed only as a view destination in the document catalog
+#: (DEC-9): official government PDFs often open "at page 1, fit width". An action
+#: dictionary (JavaScript, URI, Launch, Named, GoToR, ...) is always rejected.
+_OPEN_ACTION = b"/OpenAction"
+
+#: The same markers, checked on the *parsed* objects. The raw-byte scan above cannot
+#: see inside compressed object streams (PDF 1.5+), so every object the file defines
+#: is also walked after parsing: these names may appear neither as a dictionary key
+#: nor as a name value (e.g. ``/S /JavaScript`` or ``/Type /EmbeddedFile``).
+_FORBIDDEN_NAMES: frozenset[str] = frozenset(token.decode("ascii") for token in _FORBIDDEN_TOKENS)
+#: Upper bounds that keep the structural walk cheap on hostile input.
+_MAX_PDF_OBJECTS = 200_000
+_MAX_NESTED_ITEMS = 2_000_000
+_DESTINATION_FITS: dict[str, int] = {
+    # destination type -> number of trailing parameters (PDF 32000-1, 12.3.2.2)
+    "/XYZ": 3,
+    "/Fit": 0,
+    "/FitH": 1,
+    "/FitV": 1,
+    "/FitR": 4,
+    "/FitB": 0,
+    "/FitBH": 1,
+    "/FitBV": 1,
+}
 
 
 class PdfValidationError(AppError):
@@ -65,6 +99,7 @@ def validate_blank_pdf(data: bytes) -> ValidatedPdf:
     for token in _FORBIDDEN_TOKENS:
         if token in data:
             raise PdfValidationError("PDF contains forbidden active-content markers")
+    open_action_tokens = data.count(_OPEN_ACTION)
 
     # Structural parse — reject anything pypdf cannot read.
     try:
@@ -76,6 +111,8 @@ def validate_blank_pdf(data: bytes) -> ValidatedPdf:
     if page_count < 1 or page_count > MAX_TEMPLATE_PAGE_COUNT:
         raise PdfValidationError("PDF page count outside the permitted range")
 
+    _reject_forbidden_objects(reader)
+    _check_open_action(reader, open_action_tokens)
     _reject_populated_acroform(reader)
 
     return ValidatedPdf(
@@ -135,6 +172,100 @@ def _inspect_form(reader: PdfReader) -> PdfFormInfo:
     except Exception:
         raise PdfValidationError("PDF has an unreadable page or form structure") from None
     return PdfFormInfo(pages=pages, fields=fields)
+
+
+def _object_ids(reader: PdfReader) -> list[tuple[int, int]]:
+    """Every (object number, generation) the file defines, compressed ones included."""
+    ids: set[tuple[int, int]] = set()
+    for generation, entries in reader.xref.items():
+        ids.update((idnum, generation) for idnum in entries)
+    ids.update((idnum, 0) for idnum in reader.xref_objStm)
+    return sorted(ids)
+
+
+def _reject_forbidden_objects(reader: PdfReader) -> None:
+    """Walk every defined object (including ones inside object streams) for markers.
+
+    ``/OpenAction`` is allowed only as the document catalog's own entry; its value is
+    checked by :func:`_check_open_action`.
+    """
+    rejected = PdfValidationError("PDF contains forbidden active-content markers")
+    try:
+        root_ref = reader.trailer.raw_get("/Root")
+        catalog_id = root_ref.idnum if isinstance(root_ref, IndirectObject) else None
+        ids = _object_ids(reader)
+        if len(ids) > _MAX_PDF_OBJECTS:
+            raise PdfValidationError("PDF has too many objects")
+        budget = _MAX_NESTED_ITEMS
+        for idnum, generation in ids:
+            obj = reader.get_object(IndirectObject(idnum, generation, reader))
+            stack: list[Any] = [(obj, idnum == catalog_id)]
+            while stack:
+                budget -= 1
+                if budget < 0:
+                    raise PdfValidationError("PDF structure is too large")
+                item, is_catalog = stack.pop()
+                if isinstance(item, DictionaryObject):  # stream dictionaries included
+                    for key in item:
+                        if str(key) in _FORBIDDEN_NAMES:
+                            raise rejected
+                        if key == "/OpenAction" and not is_catalog:
+                            raise rejected
+                        value = item.raw_get(key)
+                        if not isinstance(value, IndirectObject):
+                            stack.append((value, False))
+                elif isinstance(item, ArrayObject):
+                    stack.extend((value, False) for value in item)
+                elif isinstance(item, NameObject) and str(item) in _FORBIDDEN_NAMES:
+                    raise rejected
+    except PdfValidationError:
+        raise
+    except Exception:
+        raise PdfValidationError("PDF has an unreadable object structure") from None
+
+
+def _check_open_action(reader: PdfReader, raw_token_count: int) -> None:
+    """Allow ``/OpenAction`` only as a view destination to a page of this document.
+
+    The catalog is inspected structurally, so an action hidden in a compressed object
+    stream is caught too. A raw ``/OpenAction`` anywhere other than the catalog's
+    single entry is rejected.
+    """
+    rejected = PdfValidationError("PDF contains forbidden active-content markers")
+    try:
+        root = reader.trailer["/Root"].get_object()
+        if not isinstance(root, DictionaryObject):
+            raise rejected
+        raw_value = root.get("/OpenAction")
+        if raw_value is None:
+            if raw_token_count:
+                raise rejected
+            return
+        if raw_token_count > 1:
+            raise rejected
+        value = raw_value.get_object()
+        if not isinstance(value, ArrayObject) or len(value) < 2:
+            raise rejected
+        target, fit = value[0], value[1]
+        page_ids = {
+            page.indirect_reference.idnum
+            for page in reader.pages
+            if page.indirect_reference is not None
+        }
+        if not isinstance(target, IndirectObject) or target.idnum not in page_ids:
+            raise rejected
+        if not isinstance(fit, NameObject) or str(fit) not in _DESTINATION_FITS:
+            raise rejected
+        params = list(value[2:])
+        if len(params) != _DESTINATION_FITS[str(fit)]:
+            raise rejected
+        for param in params:
+            if not isinstance(param, NumberObject | FloatObject | NullObject):
+                raise rejected
+    except PdfValidationError:
+        raise
+    except Exception:
+        raise rejected from None
 
 
 def _reject_populated_acroform(reader: PdfReader) -> None:
