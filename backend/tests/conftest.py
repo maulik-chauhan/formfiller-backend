@@ -63,6 +63,19 @@ os.environ.update(
         "CORS_ALLOWED_ORIGINS": "",
         "LEASE_SIGNING_PREV_SEED_B64": "",
         "LEASE_SIGNING_PREV_KEY_ID": "",
+        # Limits and lifetimes the tests assert on; a local .env may tune them.
+        "ACCESS_TOKEN_TTL_MINUTES": "15",
+        "REFRESH_TOKEN_TTL_DAYS": "30",
+        "OTP_TTL_SECONDS": "300",
+        "OTP_MAX_ATTEMPTS": "3",
+        "OTP_RESEND_COOLDOWN_SECONDS": "60",
+        "OTP_REQUEST_MAX_PER_HOUR": "5",
+        "OTP_VERIFY_MAX_PER_MINUTE_PER_IP": "5",
+        "LEASE_RESERVATION_TTL_HOURS": "48",
+        "LEASE_CORRECTION_WINDOW_HOURS": "24",
+        "ESIGN_MODULE_ENABLED": "false",
+        "PAYMENT_MAX_QUANTITY": "1",
+        "RAZORPAY_ENVIRONMENT": "test",
     }
 )
 
