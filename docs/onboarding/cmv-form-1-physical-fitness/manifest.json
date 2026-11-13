@@ -21,8 +21,7 @@
           "label": "1. Name of the applicant",
           "required": true,
           "validation": {
-            "max_length": 55,
-            "pattern": "alpha_space"
+            "max_length": 55
           },
           "profile_key": "full_name",
           "pdf": [
@@ -46,8 +45,7 @@
           "label": "2. Son/Wife/Daughter of",
           "required": true,
           "validation": {
-            "max_length": 55,
-            "pattern": "alpha_space"
+            "max_length": 55
           },
           "pdf": [
             {
@@ -66,175 +64,51 @@
         },
         {
           "id": "permanent_address",
-          "type": "address",
+          "type": "multiline",
           "label": "3. Permanent address",
-          "help": "Printed over the four lines provided.",
+          "help": "Printed across the four lines provided on the form.",
           "required": true,
+          "validation": {
+            "max_length": 200
+          },
           "pdf": [
             {
               "type": "text_at",
               "page": 0,
               "x": 234,
-              "y": 672,
+              "y": 608,
               "width": 316,
-              "height": 13,
+              "height": 76,
               "font": "Helvetica",
               "size": 9,
               "align": "left",
-              "multiline": false,
-              "source": "line1"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 654,
-              "width": 316,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "line2"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 635,
-              "width": 150,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "city"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 392,
-              "y": 635,
-              "width": 158,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "district"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 616,
-              "width": 150,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "state"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 392,
-              "y": 616,
-              "width": 158,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "pincode"
+              "multiline": true,
+              "line_height": 19
             }
           ]
         },
         {
           "id": "temporary_address",
-          "type": "address",
+          "type": "multiline",
           "label": "4. Temporary address / Official address (if any)",
-          "help": "Leave blank if not applicable.",
+          "help": "Leave blank if not applicable. Printed across the four lines provided on the form.",
           "required": false,
+          "validation": {
+            "max_length": 200
+          },
           "pdf": [
             {
               "type": "text_at",
               "page": 0,
               "x": 234,
-              "y": 598,
+              "y": 534,
               "width": 316,
-              "height": 13,
+              "height": 76,
               "font": "Helvetica",
               "size": 9,
               "align": "left",
-              "multiline": false,
-              "source": "line1"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 579,
-              "width": 316,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "line2"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 560,
-              "width": 150,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "city"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 392,
-              "y": 560,
-              "width": 158,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "district"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 234,
-              "y": 542,
-              "width": 150,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "state"
-            },
-            {
-              "type": "text_at",
-              "page": 0,
-              "x": 392,
-              "y": 542,
-              "width": 158,
-              "height": 13,
-              "font": "Helvetica",
-              "size": 9,
-              "align": "left",
-              "multiline": false,
-              "source": "pincode"
+              "multiline": true,
+              "line_height": 19
             }
           ]
         },
@@ -267,11 +141,11 @@
           "id": "age_on_application",
           "type": "number",
           "label": "5. (b) Age on date of application (completed years)",
-          "help": "Enter your age yourself; it is not calculated from the date of birth.",
+          "help": "Your age in completed years on the date of application. It is not calculated from the date of birth.",
           "required": true,
           "validation": {
-            "min": 1,
-            "max": 120
+            "min": 0,
+            "max": 999
           },
           "pdf": [
             {
@@ -315,7 +189,7 @@
           "id": "identification_mark_2",
           "type": "text",
           "label": "6. Identification mark (2)",
-          "required": false,
+          "required": true,
           "validation": {
             "max_length": 60
           },

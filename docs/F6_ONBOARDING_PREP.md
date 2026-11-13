@@ -5,7 +5,8 @@ citizen flow are not used yet: Phases 4–7 run after the frontend update from L
 No form here is production-ready, and no generated document is officially accepted by
 any authority.
 
-Prepared on 2026-11-13.
+Prepared on 2026-11-13; F6.1/F6.2 update on 2026-11-14 (sources re-verified, manifests
+corrected, per-form records in `docs/onboarding/<slug>/README.md`).
 
 **Baseline correction:** backend `main` is now `03c2bbd` (F5), not `947a800`. The
 frontend is on `feat/f4-forms-pdf` at `5d876f1`. The only code change made during this
@@ -63,11 +64,11 @@ and the output was rendered and inspected.
 ### KMV 12 — `ka-kmv-12-conductor-licence`
 
 - **Fields:** 16. **Mappings:** 16, all `text_at`/`mark_at` on page 0.
-- **Manifest SHA-256:** `b74e90eaf7b2b3b37fb9499a1fc0fb46a8287dece06e1f5722d816e5532c29ab`
+- **Manifest SHA-256:** `b74350fe4661f283056d3807c33731de8942855281db9071dcd4c66382e79cf8`
 - **Contract validation:** 0 issues.
 - **Fill tests:** typical and maximum-length sets, no overflow.
 - **Coverage:** items 1–12 and "Dated" are all mapped:
-  - Name and father's name: `alpha_space` pattern, 40 characters.
+  - Name and father's name: 40 characters (print space; no character pattern, since the form states none).
   - Date of birth: `not_future`.
   - Present and permanent address: 2-line boxes, 100 characters.
   - Qualification and convictions: text.
@@ -87,16 +88,16 @@ and the output was rendered and inspected.
 
 ### CMV Form 1 — `cmv-form-1-physical-fitness`
 
-- **Fields:** 15. **Mappings:** 32.
-- **Manifest SHA-256:** `06e2e81dc772f90dc50bebada42c82316f72f2ab3a614b096e742a3ef8238f38`
+- **Fields:** 15. **Mappings:** 22.
+- **Manifest SHA-256:** `1d276c32b4bbbf369b86cd49e423272fa2b1c5aef545d8fc863ab10d46830735`
 - **Contract validation:** 0 issues on the full upload path.
 - **Fill tests:** all-No and all-Yes/maximum-length sets, no overflow.
 - **Coverage:**
   - Name and S/W/D of.
-  - Permanent address over its 4 lines: line1 / line2 / city + district / state + PIN, with PIN validated.
-  - Optional temporary/official address, laid out the same way (validated in full only if any part is filled).
+  - Permanent address as free text across the form's 4 dotted lines (no PIN rule, since the form states none).
+  - Optional temporary/official address ("if any"), laid out the same way.
   - Date of birth, and age on the application date.
-  - Identification marks (1) and (2).
+  - Identification marks (1) and (2), both required (neither is marked "if any").
   - Questions (a)–(g) as Yes/No: the answer that does not apply is struck through with a cross, as the form instructs.
   - Question labels use the official wording. For (b), the text continues in the help because labels are capped at 200 characters.
 - **Not mapped:**
@@ -108,7 +109,7 @@ and the output was rendered and inspected.
     of a Central-rule form. A slug without a `ka-` prefix (`cmv-form-1-physical-fitness`)
     could collide with another state's copy later; consider `ka-cmv-form-1-physical-fitness`
     before the template is created, because the slug cannot change afterwards.
-  - Age is entered by the applicant (not computed) with range 1–120.
+  - Age is entered by the applicant (not computed); only non-negative, at most 3 digits.
   - Identification mark (1) is printed on the "(1)" row and mark (2) on the dotted line beside "(2)". The official layout is ambiguous here.
 
 ## 4. Form No. 121: why it is deferred
