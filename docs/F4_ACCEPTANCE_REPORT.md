@@ -2,13 +2,13 @@
 
 Date of this report: 2026-11-13 (supersedes the 2026-11-12 version).
 
-| Repository | Branch | Committed at | Uncommitted now |
+| Repository | Branch | Verified at | Acceptance fixes committed as |
 |---|---|---|---|
-| Backend `maulik-chauhan/formfiller-backend` | `feat/f3-f4-integration` | `94882e2` | `backend/tests/conftest.py`, this report |
-| Frontend `KM-Inc/screenshot-to-sight-3914` | `feat/f4-forms-pdf` | `f4193b6` | `src/features/vault/VaultPanel.tsx`, `src/test/vault-panel.test.tsx` |
+| Backend `maulik-chauhan/formfiller-backend` | `feat/f3-f4-integration` | `94882e2` + fix 2 | `6fe3002` (test config, this report) |
+| Frontend `KM-Inc/screenshot-to-sight-3914` | `feat/f4-forms-pdf` | `f4193b6` + fix 1 | `0c01223` (vault panel, tests) |
 
-Correction to the brief: backend `main` is at `94882e2` (identical to
-`feat/f3-f4-integration`), not `55083a7`.
+Correction to the brief: backend `main` was at `94882e2`, not `55083a7`. `main` has
+not been moved; it is one commit (plus this note) behind `feat/f3-f4-integration`.
 
 ## Verdict
 
@@ -263,15 +263,14 @@ status and shape the other side expected.
 
 ## Files changed and commits
 
-Uncommitted, from this pass:
+Changed in this pass, committed and pushed:
 
-- Frontend: `src/features/vault/VaultPanel.tsx` (passphrase change, vault deletion),
-  `src/test/vault-panel.test.tsx` (new).
-- Backend: `backend/tests/conftest.py` (pins limits and lifetimes).
-- Docs: `docs/F4_ACCEPTANCE_REPORT.md` (this file).
+- Frontend `0c01223`: `src/features/vault/VaultPanel.tsx` (passphrase change, vault
+  deletion), `src/test/vault-panel.test.tsx` (new).
+- Backend `6fe3002`: `backend/tests/conftest.py` (pins limits and lifetimes),
+  `docs/F4_ACCEPTANCE_REPORT.md` (this file).
 
-No commits were created in this pass. Existing: backend `55083a7`, `94882e2`;
-frontend `f4193b6`.
+Earlier commits: backend `55083a7`, `94882e2`; frontend `f4193b6`.
 
 Left on this machine by the run: one exported test PDF in the Downloads folder
 (`test-coordinate-form-1.0.0-Coordinate-acceptance-draft.pdf`, fictional data).
