@@ -85,3 +85,28 @@ def test_no_cors_headers_when_unconfigured() -> None:
         r = client.get("/api/v1/health/live", headers={"Origin": ALLOWED})
         assert r.status_code == 200
         assert "access-control-allow-origin" not in r.headers
+
+
+def test_every_api_route_method_is_allowed_by_cors(cors_client: TestClient) -> None:
+    """A browser cannot call a route whose method fails preflight (F6 regression:
+    a PATCH admin route passed API tests but was unreachable from the console)."""
+    from fastapi.routing import APIRoute
+
+    from app.main import CORS_ALLOWED_METHODS
+
+    methods = {
+        m
+        for r in cors_client.app.routes  # type: ignore[attr-defined]
+        if isinstance(r, APIRoute) and r.path.startswith("/api/")
+        for m in r.methods
+    }
+    assert methods - {"HEAD"} <= set(CORS_ALLOWED_METHODS)
+    preflight = cors_client.options(
+        "/api/v1/admin/domains/transport.karnataka.gov.in/scope",
+        headers={
+            "Origin": ALLOWED,
+            "Access-Control-Request-Method": "POST",
+            "Access-Control-Request-Headers": "authorization,content-type",
+        },
+    )
+    assert preflight.status_code == 200

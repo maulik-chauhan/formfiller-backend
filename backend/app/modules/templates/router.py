@@ -259,7 +259,8 @@ async def create_domain(
     return schemas.ApprovedDomainResponse.model_validate(domain)
 
 
-@admin_router.patch("/domains/{domain_pattern}", response_model=schemas.ApprovedDomainResponse)
+# POST, like the other admin edits: the CORS policy deliberately allows only GET/POST/DELETE.
+@admin_router.post("/domains/{domain_pattern}/scope", response_model=schemas.ApprovedDomainResponse)
 async def update_domain(
     payload: schemas.AdminUpdateApprovedDomainPayload,
     domain_pattern: str = Path(min_length=3, max_length=120, pattern=r"^[a-z0-9.-]+$"),

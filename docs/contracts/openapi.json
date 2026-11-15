@@ -3693,9 +3693,9 @@
         ]
       }
     },
-    "/api/v1/admin/domains/{domain_pattern}": {
-      "patch": {
-        "operationId": "update_domain_api_v1_admin_domains__domain_pattern__patch",
+    "/api/v1/admin/domains/{domain_pattern}/scope": {
+      "post": {
+        "operationId": "update_domain_api_v1_admin_domains__domain_pattern__scope_post",
         "parameters": [
           {
             "in": "path",

@@ -49,8 +49,10 @@ async def _matches(db_session, url: str, pattern: str) -> bool:  # type: ignore[
     )
 
 
-async def _patch(client: AsyncClient, token: str, pattern: str, body: dict[str, object]):  # type: ignore[no-untyped-def]
-    return await client.patch(f"/api/v1/admin/domains/{pattern}", json=body, headers=auth(token))
+async def _scope(client: AsyncClient, token: str, pattern: str, body: dict[str, object]):  # type: ignore[no-untyped-def]
+    return await client.post(
+        f"/api/v1/admin/domains/{pattern}/scope", json=body, headers=auth(token)
+    )
 
 
 async def test_exact_host_matching(client: AsyncClient, make_principal, db_session) -> None:
@@ -138,8 +140,8 @@ async def test_legacy_exact_host_with_subdomains_can_be_narrowed(
         "allow_subdomains": False,
         "rationale": "Exact host only: forms are served from this host",
     }
-    assert (await _patch(client, curator, KA, body)).status_code == 403
-    r = await _patch(client, sa, KA, body)
+    assert (await _scope(client, curator, KA, body)).status_code == 403
+    r = await _scope(client, sa, KA, body)
     assert r.status_code == 200, r.text
     assert r.json()["allow_subdomains"] is False
     assert r.json()["domain_type"] == "STATUTORY_EXACT_HOST"
@@ -149,10 +151,10 @@ async def test_legacy_exact_host_with_subdomains_can_be_narrowed(
     assert not await _matches(db_session, f"https://sub.{KA}/x.pdf", KA)
 
     # A second edit from the same (now stale) screen is refused.
-    assert (await _patch(client, sa, KA, body)).status_code == 409
+    assert (await _scope(client, sa, KA, body)).status_code == 409
     # Re-widening an exact host is refused.
     widen = {**body, "expected_allow_subdomains": False, "allow_subdomains": True}
-    assert (await _patch(client, sa, KA, widen)).status_code == 422
+    assert (await _scope(client, sa, KA, widen)).status_code == 422
 
     row = (
         await db_session.execute(
@@ -193,7 +195,7 @@ async def test_narrowing_refused_while_subdomain_urls_are_in_use(
     assert r.status_code == 201
 
     body = {"expected_allow_subdomains": True, "allow_subdomains": False, "rationale": "narrow"}
-    r = await _patch(client, sa, "gov.in", body)
+    r = await _scope(client, sa, "gov.in", body)
     assert r.status_code == 409
     assert "in use" in r.text
     # Nothing changed, and the other domain was never touched.
@@ -215,12 +217,12 @@ async def test_domain_update_edge_cases(client: AsyncClient, make_principal, db_
     _, sa = await make_principal(UserRole.SUPER_ADMIN)
     _, citizen = await make_principal(UserRole.CITIZEN)
     body = {"expected_allow_subdomains": True, "allow_subdomains": True, "rationale": "x"}
-    assert (await _patch(client, sa, "unknown.gov.in", body)).status_code == 404
-    assert (await _patch(client, citizen, "unknown.gov.in", body)).status_code == 403
-    assert (await client.patch("/api/v1/admin/domains/x.gov.in", json=body)).status_code == 401
-    assert (await _patch(client, sa, "BAD_PATTERN", body)).status_code == 422
+    assert (await _scope(client, sa, "unknown.gov.in", body)).status_code == 404
+    assert (await _scope(client, citizen, "unknown.gov.in", body)).status_code == 403
+    assert (await client.post("/api/v1/admin/domains/x.gov.in/scope", json=body)).status_code == 401
+    assert (await _scope(client, sa, "BAD_PATTERN", body)).status_code == 422
     bad = {**body, "domain_type": "GOV_TLD_SUFFIX"}  # type and pattern are not editable
-    assert (await _patch(client, sa, "gov.in", bad)).status_code == 422
+    assert (await _scope(client, sa, "gov.in", bad)).status_code == 422
 
     r = await client.post(
         "/api/v1/admin/domains", json=_domain("gov.in", "GOV_TLD_SUFFIX", True), headers=auth(sa)
@@ -228,7 +230,7 @@ async def test_domain_update_edge_cases(client: AsyncClient, make_principal, db_
     assert r.status_code == 201
     # A no-op edit changes nothing and writes no audit row.
     same = {**body, "rationale": "Official department website (test)"}
-    assert (await _patch(client, sa, "gov.in", same)).status_code == 200
+    assert (await _scope(client, sa, "gov.in", same)).status_code == 200
     count = await db_session.scalar(
         text("SELECT COUNT(*) FROM audit_logs WHERE event_type = 'ADMIN_APPROVED_DOMAIN_UPDATED'")
     )

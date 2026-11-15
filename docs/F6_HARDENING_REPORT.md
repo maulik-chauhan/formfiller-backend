@@ -66,10 +66,10 @@ of these branches. **External publication stays NO-GO** (DEC-10, DEC-1, DEC-3).
 |---|---|
 | Migration `0004`: the host must be `[A-Za-z0-9.-]+` followed by `/` or the end of the URL. User-info, ports, queries and fragments are refused. It refuses to run if any existing active source or version URL would stop validating. Downgrade restores the old function. | `backend/alembic/versions/0004_f6_strict_source_url_host.py` |
 | Creating a domain refuses `STATUTORY_EXACT_HOST` with `allow_subdomains: true` (422) | `schemas.py` |
-| `PATCH /api/v1/admin/domains/{domain_pattern}`, super admin only: changes `allow_subdomains` and `rationale`; the pattern, type and active flag cannot change. See the rules below. | `service.update_domain`, `router.py` |
+| `POST /api/v1/admin/domains/{domain_pattern}/scope`, super admin only: changes `allow_subdomains` and `rationale`; the pattern, type and active flag cannot change. See the rules below. | `service.update_domain`, `router.py` |
 | Admin console: choosing "exact host" unticks and disables "Allow subdomains"; a legacy exact host with subdomains on shows a warning; super admins get an "Edit domain scope" form | `SourcesPage.tsx`, `api.ts` |
 
-Rules for the `PATCH` endpoint:
+Rules for the scope endpoint:
 - `expected_allow_subdomains` is required: a stale edit is refused with 409.
 - An exact host cannot be widened (422).
 - Narrowing is refused (409) while any source or version under that pattern uses a
@@ -101,6 +101,14 @@ allows subdomains. **Next, with your approval:**
 
 The editor was checked in the running app: the warning shows and the checkbox is locked
 off. Nothing was saved.
+
+**Correction after merge (fix `fix/domain-scope-cors`):** the edit route was first
+shipped as `PATCH /admin/domains/{pattern}`. The API's CORS policy deliberately allows
+only GET, POST and DELETE, so the browser's preflight failed (400) and the console
+showed "couldn't reach the server". The API tests call the app directly, so they did
+not catch it. The route is now `POST /admin/domains/{pattern}/scope`, matching the
+other admin edits; the CORS policy is unchanged. A new test fails if any API route
+uses a method CORS does not allow.
 
 ## 3. KMV 12 print overflow
 
@@ -289,7 +297,7 @@ Decision needed: DEC-12.
 - **Domain security:**
   - new `backend/alembic/versions/0004_f6_strict_source_url_host.py`;
   - `app/modules/templates/{schemas,service,router}.py` (create rule, `update_domain`,
-    `PATCH` route);
+    `POST …/scope` route);
   - `app/modules/audit/schemas.py` (two boolean audit keys);
   - new `tests/integration/test_domain_scope.py` (12 tests);
   - `tests/security/test_privacy_surface.py` (reviewed route inventory +1).
@@ -300,7 +308,7 @@ Decision needed: DEC-12.
     `docs/contracts/fixtures/manifests/invalid/valign-without-multiline.json`,
     `docs/contracts/fixtures/index.json`;
   - `tests/unit/test_manifest_contract.py` (+4).
-- **OpenAPI:** `docs/contracts/openapi.json` (new `PATCH` route).
+- **OpenAPI:** `docs/contracts/openapi.json` (new `POST …/scope` route).
 - **KMV 12:**
   - new `docs/onboarding/ka-kmv-12-conductor-licence/manifest-1.0.1.json`;
   - its `README.md` §6;
