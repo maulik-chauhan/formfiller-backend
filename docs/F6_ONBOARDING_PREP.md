@@ -86,10 +86,10 @@ and the output was rendered and inspected.
   - Addresses are free text, so there is no PIN validation: the 2-line space cannot hold the structured address layout.
   - At maximum length the second address line sits just above the printed rule.
 
-### CMV Form 1 — `cmv-form-1-physical-fitness`
+### CMV Form 1 — `ka-cmv-form-1-physical-fitness`
 
 - **Fields:** 15. **Mappings:** 22.
-- **Manifest SHA-256:** `1d276c32b4bbbf369b86cd49e423272fa2b1c5aef545d8fc863ab10d46830735`
+- **Manifest SHA-256:** `8b538e46a873dc0b72d9518bcba2ee012aea1d2c06cd98334368ff5951388a97`
 - **Contract validation:** 0 issues on the full upload path.
 - **Fill tests:** all-No and all-Yes/maximum-length sets, no overflow.
 - **Coverage:**
@@ -106,9 +106,8 @@ and the output was rendered and inspected.
   - The closing declaration: it has no box, so it is affirmed by signature.
 - **Assumptions to review:**
   - Identity uses `KARNATAKA_STATE`: the file is the Karnataka Transport Department's copy
-    of a Central-rule form. A slug without a `ka-` prefix (`cmv-form-1-physical-fitness`)
-    could collide with another state's copy later; consider `ka-cmv-form-1-physical-fitness`
-    before the template is created, because the slug cannot change afterwards.
+    of a Central-rule form. The slug carries a `ka-` prefix (`ka-cmv-form-1-physical-fitness`,
+    set in F6.3 before any template existed) so another state's copy cannot collide.
   - Age is entered by the applicant (not computed); only non-negative, at most 3 digits.
   - Identification mark (1) is printed on the "(1)" row and mark (2) on the dotted line beside "(2)". The official layout is ambiguous here.
 

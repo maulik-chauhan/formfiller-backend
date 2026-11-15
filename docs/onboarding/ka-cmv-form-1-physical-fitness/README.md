@@ -38,9 +38,9 @@ signature.
 
 ## 3. Proposed manifest (`manifest.json`, contract v1)
 
-- **Identity:** `cmv-form-1-physical-fitness`, `KARNATAKA_STATE`, `TRANSPORT`, `CMV-FORM-1`, 1.0.0, 1 page.
+- **Identity:** `ka-cmv-form-1-physical-fitness`, `KARNATAKA_STATE`, `TRANSPORT`, `CMV-FORM-1`, 1.0.0, 1 page.
 - **Size:** 15 fields, 22 mappings.
-- **Manifest SHA-256:** `1d276c32b4bbbf369b86cd49e423272fa2b1c5aef545d8fc863ab10d46830735`
+- **Manifest SHA-256:** `8b538e46a873dc0b72d9518bcba2ee012aea1d2c06cd98334368ff5951388a97`
 
 | # on form | Field id | Type | Required | Mapping (page 0, pt) | Validation and why |
 |---|---|---|---|---|---|
@@ -86,7 +86,7 @@ Strike-out mark positions (page 0, mark_at x/y):
 - **Form 1A:** the medical certificate in Form 1A (Note 2) is a separate form and is not covered.
 - **Age:** not cross-checked against the date of birth (contract v1 has no computed rules).
 - **Identification marks:** the form prints "(1)" on a row without dots and "(2)" beside a dotted line. Mark (1) is placed on the "(1)" row and mark (2) on the line beside "(2)". This layout is ambiguous and should be reviewed by the checker.
-- **Slug:** `cmv-form-1-physical-fitness` has no state prefix. Consider `ka-cmv-form-1-physical-fitness` before the template is created; a slug cannot change afterwards.
+- **Slug:** `ka-cmv-form-1-physical-fitness` (state prefix added in F6.3, before any template was created).
 
 ## 5. Authenticity and permission evidence
 

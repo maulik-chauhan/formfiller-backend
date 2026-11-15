@@ -28,7 +28,7 @@ MANIFESTS = sorted(ONBOARDING.glob("*/manifest.json"))
 def test_onboarding_manifests_present() -> None:
     assert {p.parent.name for p in MANIFESTS} >= {
         "ka-kmv-12-conductor-licence",
-        "cmv-form-1-physical-fitness",
+        "ka-cmv-form-1-physical-fitness",
     }
 
 

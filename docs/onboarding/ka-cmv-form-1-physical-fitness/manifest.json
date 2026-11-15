@@ -2,7 +2,7 @@
   "schema_version": 1,
   "kind": "govforms.form-manifest",
   "identity": {
-    "slug": "cmv-form-1-physical-fitness",
+    "slug": "ka-cmv-form-1-physical-fitness",
     "jurisdiction": "KARNATAKA_STATE",
     "category": "TRANSPORT",
     "official_form_code": "CMV-FORM-1",
