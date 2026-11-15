@@ -15,11 +15,12 @@ import json
 import uuid
 from dataclasses import dataclass
 
-from sqlalchemy import Select, func, select
+from sqlalchemy import Select, func, select, text
 from sqlalchemy.exc import DBAPIError, IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.constants import (
+    DomainPatternType,
     SourceCheckMethod,
     SourceCheckResult,
     TemplateVersionStatus,
@@ -54,6 +55,7 @@ R = UserRole
 
 class TemplateEvent:
     DOMAIN_CREATED = "ADMIN_APPROVED_DOMAIN_CREATED"
+    DOMAIN_UPDATED = "ADMIN_APPROVED_DOMAIN_UPDATED"
     SOURCE_CREATED = "ADMIN_GOV_SOURCE_CREATED"
     SOURCE_CHECK_RECORDED = "ADMIN_GOV_SOURCE_CHECK_RECORDED"
     TEMPLATE_CREATED = "ADMIN_TEMPLATE_CREATED"
@@ -63,6 +65,9 @@ class TemplateEvent:
     VERSION_ARTIFACTS_REPLACED = "ADMIN_TEMPLATE_VERSION_ARTIFACTS_REPLACED"
     TEMPLATE_METADATA_UPDATED = "ADMIN_TEMPLATE_METADATA_UPDATED"
 
+
+#: Host part of an official https URL; mirrors fn_validate_url_against_approved_domains.
+_URL_HOST_REGEX = r"^https://([A-Za-z0-9.-]+)(/|$)"
 
 #: Clock skew tolerated when checking that a source download time is not in the future.
 _FUTURE_TOLERANCE = dt.timedelta(minutes=5)
@@ -197,6 +202,76 @@ class TemplateAdminService:
             "approved_source_domain",
             payload.domain_pattern,
             {"domain_pattern": payload.domain_pattern},
+        )
+        await self.session.commit()
+        return domain
+
+    async def update_domain(
+        self,
+        auth: AuthContext,
+        domain_pattern: str,
+        payload: schemas.AdminUpdateApprovedDomainPayload,
+    ) -> ApprovedSourceDomain:
+        """Change whether subdomains match. Pattern, type and activity are unchanged.
+
+        Narrowing to the exact host is refused while any source or version under this
+        pattern uses a different host: the URL triggers re-check those rows on every
+        UPDATE, so narrowing would block their later status changes.
+        """
+        domain = await self.session.get(ApprovedSourceDomain, domain_pattern, with_for_update=True)
+        if domain is None:
+            raise NotFoundError("Approved domain not found")
+        if domain.allow_subdomains != payload.expected_allow_subdomains:
+            raise ConflictError("This domain was changed by someone else; reload it and try again")
+        if (
+            domain.domain_type == DomainPatternType.STATUTORY_EXACT_HOST
+            and payload.allow_subdomains
+        ):
+            raise ValidationFailedError(schemas.EXACT_HOST_SUBDOMAINS_MESSAGE)
+        changed = [
+            name
+            for name, before, after in (
+                ("allow_subdomains", domain.allow_subdomains, payload.allow_subdomains),
+                ("rationale", domain.rationale, payload.rationale),
+            )
+            if before != after
+        ]
+        if not changed:
+            return domain
+        if domain.allow_subdomains and not payload.allow_subdomains:
+            in_use = await self.session.scalar(
+                text(
+                    "SELECT (SELECT COUNT(*) FROM government_sources"
+                    "         WHERE matched_domain_pattern = :p"
+                    "           AND LOWER(SUBSTRING(official_portal_url FROM :rx))"
+                    "               IS DISTINCT FROM :p)"
+                    "     + (SELECT COUNT(*) FROM template_versions"
+                    "         WHERE source_url_matched_domain = :p"
+                    "           AND LOWER(SUBSTRING(source_pdf_download_url FROM :rx))"
+                    "               IS DISTINCT FROM :p)"
+                ),
+                {"p": domain.domain_pattern, "rx": _URL_HOST_REGEX},
+            )
+            if in_use:
+                raise ConflictError(
+                    f"{in_use} source or version URL(s) under this domain use a subdomain; "
+                    "subdomains cannot be turned off while they are in use"
+                )
+        previous = domain.allow_subdomains
+        domain.allow_subdomains = payload.allow_subdomains
+        domain.rationale = payload.rationale
+        await self.session.flush()
+        await self._audit(
+            auth,
+            TemplateEvent.DOMAIN_UPDATED,
+            "approved_source_domain",
+            domain.domain_pattern,
+            {
+                "domain_pattern": domain.domain_pattern,
+                "changed_fields": ",".join(changed),
+                "previous_allow_subdomains": previous,
+                "allow_subdomains": domain.allow_subdomains,
+            },
         )
         await self.session.commit()
         return domain

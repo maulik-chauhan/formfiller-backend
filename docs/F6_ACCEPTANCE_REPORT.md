@@ -21,7 +21,7 @@ permission to reuse its documents.
 
 | Item | Value |
 |---|---|
-| Backend | branch `feat/f6-onboarding-prep` at `c5f7116`, plus this run's uncommitted changes (§10); backend `main` is `e174b6e` |
+| Backend | branch `feat/f6-onboarding-prep` at `c5f7116`, plus this run's changes (§10), since committed as `047eb2c` and fast-forwarded to `main` |
 | Frontend | `main` at `c03f0df` (unchanged) |
 | Database | local PostgreSQL 16 `gov_forms_dev`, migrations at head `0003` |
 | Signing key | local development key `ed25519-template-dev-local`, pinned in the git-ignored frontend `.env.local` (development only) |
@@ -153,9 +153,9 @@ address to a third party. Self-hosting the fonts is recommended before productio
   - the placement of identification marks (1) and (2) follows an interpretation of an ambiguous layout.
 - **Form 121:** deferred; it needs a contract v2 decision.
 - **Out of scope:** DEC-1, DEC-2, DEC-3, DEC-8 and DEC-10 remain open; DEC-9 follow-ups (submit-form and similar actions, XFA, encrypted PDFs) remain open.
-- **Domain configuration:** the subdomain flag (§3) needs a console edit capability or an approved database correction.
+- **Domain configuration:** the subdomain flag (§3) needs a console edit capability or an approved database correction. *Update: the edit capability is implemented on `feat/f6-hardening` (see `F6_HARDENING_REPORT.md`); the correction itself awaits approval.*
 
-## 10. Changes made in this run (uncommitted, branch `feat/f6-onboarding-prep`)
+## 10. Changes made in this run (committed as `047eb2c` on `feat/f6-onboarding-prep`; `main` fast-forwarded to it)
 
 - `docs/onboarding/cmv-form-1-physical-fitness/` renamed to `docs/onboarding/ka-cmv-form-1-physical-fitness/`; manifest identity slug updated; README and manifest hash updated.
 - `docs/F6_ONBOARDING_PREP.md`: CMV slug and hash updated.

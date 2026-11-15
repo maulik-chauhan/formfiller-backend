@@ -309,6 +309,12 @@
               "minimum": 4,
               "maximum": 200
             },
+            "valign": {
+              "enum": [
+                "top",
+                "bottom"
+              ]
+            },
             "source": {
               "enum": [
                 "line1",

@@ -731,6 +731,13 @@ def build_invalid(valid: dict[str, dict[str, Any]]) -> dict[str, dict[str, Any]]
         lambda d: field(d)["pdf"][0].update(x=76.5),
     )
     case(
+        "valign-without-multiline",
+        "simple-text",
+        "mapping_not_applicable",
+        "Vertical anchoring applies only to multi-line coordinate text.",
+        lambda d: field(d)["pdf"][0].update(valign="bottom"),
+    )
+    case(
         "select-without-options",
         "dropdown-checkbox",
         "options_invalid",

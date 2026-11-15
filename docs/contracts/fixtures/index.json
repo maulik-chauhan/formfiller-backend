@@ -21,6 +21,7 @@
     "manifests/invalid/unknown-property.json": "4579d5fb7892c86319c96e53cdd1743bc4eb492d430fa27d799edd09b463eeac",
     "manifests/invalid/unmapped-field.json": "ab865cbbd8a46f36a9135a5d1394d704d2f11e3e7ac7f452544698c23df439c0",
     "manifests/invalid/unsupported-schema-version.json": "8a66fd15019720fa06c694dc8f3af35ab4e4d6662baa4c448b8c4cc62cefeabe",
+    "manifests/invalid/valign-without-multiline.json": "b840926fb60d61aedc37066cf5b55496e7964fd8e3661d658dfb83c4c8568e5c",
     "manifests/valid/conditional.json": "2d545a71624794ee6849518d1b52db34b301c43dfb1ea830ed9a5e4bd6c7d8b2",
     "manifests/valid/coordinate-mapped.json": "95298309564fce2829e8221c931c99922e4f005ac34692f8d0d10ce8d65c03bd",
     "manifests/valid/date-number.json": "2bf25bbf46cc57db39b9c24bc2d2d0adbfc873876efed2c535898fd75227f0f5",

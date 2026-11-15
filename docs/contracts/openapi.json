@@ -1086,6 +1086,33 @@
         "title": "AdminTemplateVersionResponse",
         "type": "object"
       },
+      "AdminUpdateApprovedDomainPayload": {
+        "additionalProperties": false,
+        "description": "Edit an approved domain's matching scope. The pattern and type never change.\n\n``expected_allow_subdomains`` must equal the stored value, so an edit made from a\nstale screen is refused (409) instead of silently overwriting a newer change.\n``rationale`` replaces the stored rationale and should say why the scope changed.",
+        "properties": {
+          "allow_subdomains": {
+            "title": "Allow Subdomains",
+            "type": "boolean"
+          },
+          "expected_allow_subdomains": {
+            "title": "Expected Allow Subdomains",
+            "type": "boolean"
+          },
+          "rationale": {
+            "maxLength": 200,
+            "minLength": 1,
+            "title": "Rationale",
+            "type": "string"
+          }
+        },
+        "required": [
+          "expected_allow_subdomains",
+          "allow_subdomains",
+          "rationale"
+        ],
+        "title": "AdminUpdateApprovedDomainPayload",
+        "type": "object"
+      },
       "AdminVersionDetailResponse": {
         "properties": {
           "actions": {
@@ -3661,6 +3688,66 @@
           }
         ],
         "summary": "Create Domain",
+        "tags": [
+          "admin-templates"
+        ]
+      }
+    },
+    "/api/v1/admin/domains/{domain_pattern}": {
+      "patch": {
+        "operationId": "update_domain_api_v1_admin_domains__domain_pattern__patch",
+        "parameters": [
+          {
+            "in": "path",
+            "name": "domain_pattern",
+            "required": true,
+            "schema": {
+              "maxLength": 120,
+              "minLength": 3,
+              "pattern": "^[a-z0-9.-]+$",
+              "title": "Domain Pattern",
+              "type": "string"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/AdminUpdateApprovedDomainPayload"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ApprovedDomainResponse"
+                }
+              }
+            },
+            "description": "Successful Response"
+          },
+          "422": {
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            },
+            "description": "Validation Error"
+          }
+        },
+        "security": [
+          {
+            "BearerAuth": []
+          }
+        ],
+        "summary": "Update Domain",
         "tags": [
           "admin-templates"
         ]

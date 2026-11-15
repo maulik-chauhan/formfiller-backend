@@ -39,6 +39,9 @@ ALLOWED_AUDIT_METADATA_KEYS: frozenset[str] = frozenset(
         "to_status",
         "target_status",
         "check_result",
+        # Approved-domain scope changes (F6 hardening) — booleans only.
+        "previous_allow_subdomains",
+        "allow_subdomains",
         # Admin console (F5) — field names and identifiers only, never values.
         "changed_fields",
         "superseded_by_version_id",

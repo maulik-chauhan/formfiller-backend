@@ -16,6 +16,8 @@ decision fails closed until the decision is recorded here with an approver and d
 | DEC-8 | Admin role provisioning and review | **Open** | Security + Operations |
 | DEC-9 | Blank PDFs with a view-only `/OpenAction` | **Decided** (option b, 2026-11-13) | Application Security |
 | DEC-10 | Reuse terms and currency of official form sources | **Open** | Legal + Product |
+| DEC-11 | Contract v1 additions: `valign` for multi-line `text_at` | **Proposed** (F6 hardening, branch `feat/f6-hardening`) | Product + Frontend + Backend |
+| DEC-12 | Supplementary particulars (CMV Form 1 Note (1)) and signature images | **Open** | Product + Legal + Application Security |
 | COM-01 | Free quota and pricing | **Open** | Product owner |
 | M7 | eSign | **Disabled** | Legal + Product (separate milestone) |
 | LEG-1 | DPDP / retention review | **Open** | Legal counsel |
@@ -152,6 +154,35 @@ refresh token to an HttpOnly cookie would change the backend auth model and CORS
   - both before any real (non-local) publication.
 
   Local development publication with fictional data is unaffected.
+
+## DEC-11 — `valign` on multi-line coordinate text (proposed)
+
+KMV 12's printed rules are 104–128 pt long, too short for the answers the form allows
+at a readable size. Contract v1 forbids shrinking text and lays multi-line boxes out
+from the top, so a short answer either floats above the rule or a wrapped answer is
+struck through by it. **Proposal:** an optional `valign` (`top` | `bottom`) on
+`text_at` with `multiline: true`. With `bottom`, the last line sits on the rule and
+earlier lines stack upward into reserved space. Default `top` keeps every existing
+manifest's output identical.
+
+- Implemented on `feat/f6-hardening`, in step in both validators, the JSON Schema, the
+  contract document, fixtures (new invalid case) and the fill engine.
+- **Compatibility:** a manifest using `valign` is refused by older clients
+  (unknown-key rule), so it fails safely. Publish one only after the client that
+  supports it is deployed.
+- **Not proposed:** shrink-to-fit. The contract keeps "never shrunk, never
+  truncated". A future `min_size` would need its own decision and readability floor.
+- **Needs:** approval to merge both branches, then onboarding of KMV 12 version 1.0.1
+  through maker → checker → approver.
+
+## DEC-12 — Supplementary particulars and signature images
+
+- CMV Form 1 Note (1) asks for "full particulars" after certain answers, and the form
+  has no space for them. Signature images have no field type in contract v1.
+- Both need a contract v2 feature (an annex page or image mapping) and a decision on
+  whether a locally generated annex is acceptable to the licensing authority.
+- See `docs/F6_HARDENING_REPORT.md` §4 and §7. Until decided, applicants attach
+  particulars and sign by hand.
 
 ## COM-01, M7, LEG-1
 

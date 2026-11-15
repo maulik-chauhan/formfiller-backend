@@ -39,6 +39,8 @@ PATTERNS: dict[str, str] = {
 DATE_FORMATS = ("DD/MM/YYYY", "DD-MM-YYYY", "DD.MM.YYYY", "YYYY-MM-DD")
 FONTS = ("Helvetica", "Helvetica-Bold", "Times-Roman", "Courier")
 ALIGNMENTS = ("left", "center", "right")
+#: Vertical anchoring of multi-line text_at boxes (top is the v1 default).
+VERTICAL_ALIGNMENTS = ("top", "bottom")
 ADDRESS_COMPONENTS = ("line1", "line2", "city", "district", "state", "pincode")
 ADDRESS_SOURCES = (*ADDRESS_COMPONENTS, "full")
 OPTION_TEXT = ("label", "value")
@@ -744,7 +746,7 @@ def _validate_mapping(
                 "align",
                 "multiline",
             ),
-            optional=(*text_optional, "line_height"),
+            optional=(*text_optional, "line_height", "valign"),
         )
         _validate_page(mapping, path, page_count, out)
         _validate_box(mapping, ("x", "y", "width", "height"), path, out)
@@ -771,6 +773,15 @@ def _validate_mapping(
                     f"{path}.line_height",
                     "must be an integer between the font size and 200",
                 )
+        if "valign" in mapping:
+            if mapping.get("multiline") is not True:
+                out.add(
+                    "mapping_not_applicable",
+                    f"{path}.valign",
+                    "only valid when multiline is true",
+                )
+            elif mapping["valign"] not in VERTICAL_ALIGNMENTS:
+                out.add("structure_invalid", f"{path}.valign", "must be top or bottom")
         if field_type not in _TEXTUAL_TYPES:
             out.add(
                 "mapping_not_applicable", path, f"a {field_type} field cannot be printed as text"

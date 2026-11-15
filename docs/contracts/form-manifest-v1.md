@@ -143,7 +143,7 @@ zero-based. Coordinate mappings are not supported on rotated pages.
 | `type` | For field types | Properties |
 |---|---|---|
 | `acro_text` | text, multiline, number, date, select, radio, address | `field_name`, + text attributes |
-| `text_at` | same | `page, x, y, width, height, font, size, align, multiline`, `line_height?`, + text attributes |
+| `text_at` | same | `page, x, y, width, height, font, size, align, multiline`, `line_height?`, `valign?`, + text attributes |
 | `acro_checkbox` | checkbox; select/radio with `on_value` | `field_name`, `on_value?` |
 | `mark_at` | checkbox; select/radio with `on_value` | `page, x, y, size, mark` (`check`\|`cross`), `on_value?` |
 | `acro_radio` | select, radio | `field_name`, `options` {answer value → PDF export value} for **every** option |
@@ -161,7 +161,11 @@ Text attributes:
 - `transform` — optional for text/multiline/address: `none` or `uppercase`.
 
 `text_at`: `font` ∈ `Helvetica`, `Helvetica-Bold`, `Times-Roman`, `Courier`; `size` 4..72;
-`align` ∈ `left`, `center`, `right`; text is black. Single-line text that is wider than
+`align` ∈ `left`, `center`, `right`; text is black. Multi-line text is laid out from the top of the box by
+default (`valign: top`). `valign: bottom` (multi-line only) anchors the **last** line
+just above the bottom of the box, so a short answer sits on a printed rule and a longer
+one wraps upward into the space above it; the baseline of the last line is
+`y + 0.25 × size`, and each earlier line is `line_height` higher. Single-line text that is wider than
 `width` and multi-line text taller than `height` **fail generation** (`text_overflow`) —
 text is never silently truncated or shrunk. Text containing characters the standard
 fonts cannot encode fails generation (`unencodable_text`); embedding a Unicode font is

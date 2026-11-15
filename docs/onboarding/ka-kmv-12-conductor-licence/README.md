@@ -83,3 +83,45 @@ the application date were removed because the form does not state them.
 
 - **Authenticity:** the file is served by the department's own `.gov.in` site from its forms listing, and the hash was re-verified there on 2026-11-14.
 - **Permission:** none. Republishing requires prior permission under the site's policy (DEC-10).
+
+## 6. Revision 1.0.1 (`manifest-1.0.1.json`, F6 hardening) — not yet onboarded
+
+1.0.0 was onboarded and published locally on 2026-11-15. At maximum length its values
+ran past the printed rules (by up to 98 pt) and, for items 1, 2, 4, 5 and 6, past the
+form's own right text margin (x 528.7). 1.0.1 fixes the geometry only; the questions,
+identity and blank PDF are unchanged except for item 8's issuer limit.
+
+- **Manifest SHA-256:** `e4e80091d3f42e3c31f50eabdb7cc96971a06242b36bf4726bcd1694a035332b`
+- **Blank PDF SHA-256:** `3795a568273f3f95642ca2b8f4f1c9b3744e90c88334f7fe41abd26f887263ab` (unchanged)
+- **Needs:** contract support for `valign` (F6 hardening); maker → checker → approver onboarding as version 1.0.1.
+
+Printed rules were measured with pdf.js, which applies the form's negative character
+spacing (the earlier estimate from the font's width table alone was ~28 pt too long).
+
+| Item | Rule (x, baseline y) | 1.0.1 mapping | Policy |
+|---|---|---|---|
+| 1 Name | 338.0–466.2, 681.6 | x338 y682 w128 h20, 9 pt, 2 lines × 10, `valign: bottom` | on the rule; wraps upward |
+| 2 Father | 339.2–467.4, 653.5 | x339 y654 w128 h20, 9 pt, 2 × 10, bottom | on the rule; wraps upward |
+| 3 Date of birth | 339.5–467.4, 626.1 | x339 y624 w128, 10 pt, single | fixed length |
+| 4 Present address | 342.8–470.8, 598.3 | x343 y599 w127 h24, 7 pt, 3 × 8, bottom | 3 lines above the rule |
+| 5 Permanent address | 344.0–472.2, 570.6 | x344 y571 w128 h24, 7 pt, 3 × 8, bottom | 3 lines above the rule |
+| 6 Qualification | 350.3–473.4, 543.5 | x350 y544 w123 h20, 9 pt, 2 × 10, bottom | on the rule; wraps upward |
+| 7 Convictions | 369.7–473.7, 501.5 | x370 y502 w103 h18, 8 pt, 2 × 9, bottom | on the rule; wraps upward |
+| 8 Held / not held | no rule | x355 y473 w120, 9 pt | ends before the issuer column edge |
+| 8 Issuer | 371.4–475.1, 460.2 | x372 y458 w103, 8 pt, single; **max 24** (was 34) | no room to wrap (item 8's answer is printed above); help asks to abbreviate |
+| 11 Reside/business | dotted 125.3–443.3 | x125 w83, 9 pt | — |
+| 11 Place | dotted to 443.3 | x209 y334 w234, 8 pt, single | ends on the dotted line |
+| 11 District | dotted to 445.1 | x175 y320 w268, 9 pt | ends on the dotted line |
+| 12 Fee | dots from 230.7 | x231 w30, 10 pt | 5 digits |
+| Dated | rule to 212.7 | x126 w86, 10 pt | — |
+
+**Overflow policy:** a value is printed on its rule and never past the rule's end. It
+wraps only upward, into empty space reserved for it, where the row spacing allows
+(items 1, 2, 4–7). Text is never shrunk below the manifest size and never truncated: a
+value that still does not fit fails PDF generation with a message naming the field.
+Readable floor for any printed value: 7 pt (addresses only).
+
+**Evidence:** `src/test/forms/kmv12-real-pdf.test.ts` (frontend) fills the real blank with
+typical and maximum-length fictional answers and checks rule extents, rule and label
+collisions, the text column edge and non-truncation, and that over-wide answers are
+refused. Renders: `Claude outputs/f6/hardening/kmv12-1.0.1-{typ,max}.pdf(.png)`.

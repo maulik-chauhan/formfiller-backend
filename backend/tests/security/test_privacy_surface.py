@@ -32,6 +32,8 @@ EXPECTED_ROUTES = {
     ("GET", "/api/v1/templates/{slug}/versions/{semver}/status"),
     ("GET", "/api/v1/templates/{slug}/versions/{semver}/bundle"),
     ("POST", "/api/v1/admin/domains"),
+    # F6 hardening: super-admin edit of an approved domain's subdomain scope (no PII).
+    ("PATCH", "/api/v1/admin/domains/{domain_pattern}"),
     ("POST", "/api/v1/admin/sources"),
     ("POST", "/api/v1/admin/sources/{source_id}/checks"),
     ("POST", "/api/v1/admin/templates"),

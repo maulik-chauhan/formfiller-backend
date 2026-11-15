@@ -262,3 +262,21 @@ def test_non_object_and_hostile_inputs_are_rejected_not_crashed() -> None:
         assert validate_manifest(hostile)
     deep = {"schema_version": 1, "kind": "govforms.form-manifest", "identity": [], "sections": {}}
     assert {i.code for i in validate_manifest(deep)} == {"structure_invalid"}
+
+
+@pytest.mark.parametrize(
+    ("valign", "codes"),
+    [
+        ("top", set()),
+        ("bottom", set()),
+        ("middle", {"structure_invalid"}),
+        (True, {"structure_invalid"}),
+    ],
+)
+def test_valign_on_multiline_coordinate_text(valign: object, codes: set[str]) -> None:
+    manifest = copy.deepcopy(VALID["coordinate-mapped"])
+    address = next(
+        f for s in manifest["sections"] for f in s["fields"] if f["id"] == "home_address"
+    )
+    address["pdf"][0]["valign"] = valign
+    assert {i.code for i in validate_manifest(manifest)} == codes

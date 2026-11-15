@@ -259,6 +259,17 @@ async def create_domain(
     return schemas.ApprovedDomainResponse.model_validate(domain)
 
 
+@admin_router.patch("/domains/{domain_pattern}", response_model=schemas.ApprovedDomainResponse)
+async def update_domain(
+    payload: schemas.AdminUpdateApprovedDomainPayload,
+    domain_pattern: str = Path(min_length=3, max_length=120, pattern=r"^[a-z0-9.-]+$"),
+    auth: AuthContext = Depends(require_roles(UserRole.SUPER_ADMIN)),
+    service: TemplateAdminService = Depends(_admin_service),
+) -> schemas.ApprovedDomainResponse:
+    domain = await service.update_domain(auth, domain_pattern, payload)
+    return schemas.ApprovedDomainResponse.model_validate(domain)
+
+
 @admin_router.post(
     "/sources",
     response_model=schemas.GovernmentSourceResponse,

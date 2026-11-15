@@ -10,7 +10,7 @@ import datetime as dt
 import uuid
 from typing import Any, Literal
 
-from pydantic import Field
+from pydantic import Field, model_validator
 
 from app.core.constants import (
     DomainPatternType,
@@ -32,10 +32,35 @@ _SLUG = r"^[a-z0-9]+(-[a-z0-9]+)*$"
 # --------------------------------------------------------------------------- #
 # Approved domains
 # --------------------------------------------------------------------------- #
+EXACT_HOST_SUBDOMAINS_MESSAGE = (
+    "An exact-host domain (STATUTORY_EXACT_HOST) cannot allow subdomains; "
+    "approve each subdomain as its own exact host instead"
+)
+
+
 class AdminCreateApprovedDomainPayload(StrictModel):
     domain_pattern: str = Field(min_length=3, max_length=120, pattern=r"^[a-z0-9.-]+$")
     domain_type: DomainPatternType
     allow_subdomains: bool = True
+    rationale: str = Field(min_length=1, max_length=200)
+
+    @model_validator(mode="after")
+    def _exact_host_has_no_subdomains(self) -> AdminCreateApprovedDomainPayload:
+        if self.domain_type == DomainPatternType.STATUTORY_EXACT_HOST and self.allow_subdomains:
+            raise ValueError(EXACT_HOST_SUBDOMAINS_MESSAGE)
+        return self
+
+
+class AdminUpdateApprovedDomainPayload(StrictModel):
+    """Edit an approved domain's matching scope. The pattern and type never change.
+
+    ``expected_allow_subdomains`` must equal the stored value, so an edit made from a
+    stale screen is refused (409) instead of silently overwriting a newer change.
+    ``rationale`` replaces the stored rationale and should say why the scope changed.
+    """
+
+    expected_allow_subdomains: bool
+    allow_subdomains: bool
     rationale: str = Field(min_length=1, max_length=200)
 
 
